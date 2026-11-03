@@ -26,7 +26,7 @@ Axisymmetric steady heat transfer with quadratic CAX6 triangles and conductivity
 
 ## Run
 
-From `Calculix/`, after [building and configuring the executable](../../docs/BUILD-AND-RUN.md):
+From `CalculiX-with-Solved-Tech/`, after [building and configuring the executable](../../docs/BUILD-AND-RUN.md):
 
 ```bash
 mkdir -p _work/runs

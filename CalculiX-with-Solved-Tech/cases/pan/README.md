@@ -1,38 +1,38 @@
-# Capacitor
+# Pan
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-A three-dimensional C3D20 coaxial sector using scalar diffusion as a potential analogy. The coefficient is 8.8541878176e-12, with inner and outer values2 and 1.
+An axisymmetric CAX6 iron-pan model with conductivity 50, bottom flux 31500, air/food convection coefficients 10/150, and ambient temperature 293.15. Heat balance uses full-revolution 2πr weighting.
 
 ## Model parameters
 
 | Item | Value |
 |---|---|
-| Element type | C3D20 |
-| Mesh dimension | 3D |
-| Subdivision | 3 × 16 × 400 |
-| Nodes | 969,687 |
-| Elements | 192,000 |
-| Equations n | 952,073 |
-| Complete nnz | 47,134,131 |
-| Linear systems per application | 1 |
+| Element type | CAX6 |
+| Mesh dimension | 2D axisymmetric |
+| Subdivision | 16 |
+| Nodes | 890,630 |
+| Elements | 442,880 |
+| Equations n | 890,630 |
+| Complete nnz | 10,206,762 |
+| Linear systems per application | 2 |
 
 ## Files
 
 - [Refined input](input/model.inp.gz): gzip-compressed complete CalculiX model; decompressed by the runner.
 - [Parameters](parameters.json): mesh, solver configuration, and source information.
 - [Physics cards](physics-cards.inp): material, boundary, load, step, and output cards for reference.
-- [Upstream input files](source/): CalculiX 2.23 verification example; [source distribution](https://www.dhondt.de/ccx_2.23.test.tar.bz2).
+- [Upstream input files](source/): CalculiX community Launcher example; [source distribution](https://github.com/calculix/examples/tree/a079253398c05f96b019e8c07ce076e370ddeb75/launcher/Therm/pan).
 
 ## Run
 
-From `Calculix/`, after [building and configuring the executable](../../docs/BUILD-AND-RUN.md):
+From `CalculiX-with-Solved-Tech/`, after [building and configuring the executable](../../docs/BUILD-AND-RUN.md):
 
 ```bash
 mkdir -p _work/runs
-python3 tools/run_case.py capacitor \
+python3 tools/run_case.py pan \
   --binary _work/build/ccx_pangulu \
-  --output _work/runs/capacitor
+  --output _work/runs/pan
 ```
 
 Add `--profile small` and choose another output directory to use the upstream mesh. The adapter uses L0 ordering and L2 structural reuse, updating coefficients and refactorizing on graph-unchanged calls.

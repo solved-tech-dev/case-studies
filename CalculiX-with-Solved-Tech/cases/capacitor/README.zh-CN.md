@@ -26,7 +26,7 @@
 
 ## 运行
 
-按[构建说明](../../docs/BUILD-AND-RUN.zh-CN.md)完成编译与环境配置后，在`Calculix/`运行：
+按[构建说明](../../docs/BUILD-AND-RUN.zh-CN.md)完成编译与环境配置后，在`CalculiX-with-Solved-Tech/`运行：
 
 ```bash
 mkdir -p _work/runs

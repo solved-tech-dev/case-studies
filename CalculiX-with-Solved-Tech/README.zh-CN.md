@@ -35,7 +35,7 @@ docs/                    中英文使用文档
 
 ## 快速开始
 
-从`case-studies`仓库根目录进入`Calculix/`，按[构建说明](docs/BUILD-AND-RUN.zh-CN.md)完成编译和运行环境配置后，运行：
+从`case-studies`仓库根目录进入`CalculiX-with-Solved-Tech/`，按[构建说明](docs/BUILD-AND-RUN.zh-CN.md)完成编译和运行环境配置后，运行：
 
 ```bash
 mkdir -p _work/runs

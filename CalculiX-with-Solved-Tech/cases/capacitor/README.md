@@ -1,21 +1,21 @@
-# Oneel20fi
+# Capacitor
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-A unit-cube heat-transfer model with C3D20R elements, conductivity 50, one face at temperature 0, and convection to ambient −12 with coefficient 10. The analytic steady solution is T=−2x, with flux (100,0,0).
+A three-dimensional C3D20 coaxial sector using scalar diffusion as a potential analogy. The coefficient is 8.8541878176e-12, with inner and outer values2 and 1.
 
 ## Model parameters
 
 | Item | Value |
 |---|---|
-| Element type | C3D20R |
+| Element type | C3D20 |
 | Mesh dimension | 3D |
-| Subdivision | 44 |
-| Nodes | 358,425 |
-| Elements | 85,184 |
-| Equations n | 352,440 |
-| Complete nnz | 19,849,804 |
-| Linear systems per application | 2 |
+| Subdivision | 3 × 16 × 400 |
+| Nodes | 969,687 |
+| Elements | 192,000 |
+| Equations n | 952,073 |
+| Complete nnz | 47,134,131 |
+| Linear systems per application | 1 |
 
 ## Files
 
@@ -26,13 +26,13 @@ A unit-cube heat-transfer model with C3D20R elements, conductivity 50, one face 
 
 ## Run
 
-From `Calculix/`, after [building and configuring the executable](../../docs/BUILD-AND-RUN.md):
+From `CalculiX-with-Solved-Tech/`, after [building and configuring the executable](../../docs/BUILD-AND-RUN.md):
 
 ```bash
 mkdir -p _work/runs
-python3 tools/run_case.py oneel20fi \
+python3 tools/run_case.py capacitor \
   --binary _work/build/ccx_pangulu \
-  --output _work/runs/oneel20fi
+  --output _work/runs/capacitor
 ```
 
 Add `--profile small` and choose another output directory to use the upstream mesh. The adapter uses L0 ordering and L2 structural reuse, updating coefficients and refactorizing on graph-unchanged calls.

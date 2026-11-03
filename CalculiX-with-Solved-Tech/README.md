@@ -35,7 +35,7 @@ docs/                    English and Chinese documentation
 
 ## Quick start
 
-From the `case-studies` repository root, enter `Calculix/` and follow the [build instructions](docs/BUILD-AND-RUN.md). Once the executable and runtime environment are configured:
+From the `case-studies` repository root, enter `CalculiX-with-Solved-Tech/` and follow the [build instructions](docs/BUILD-AND-RUN.md). Once the executable and runtime environment are configured:
 
 ```bash
 mkdir -p _work/runs

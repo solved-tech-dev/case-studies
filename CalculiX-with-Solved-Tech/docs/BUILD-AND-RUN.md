@@ -2,7 +2,7 @@
 
 [English](BUILD-AND-RUN.md) | [简体中文](BUILD-AND-RUN.zh-CN.md) · [Home](../README.md)
 
-Run the commands below from `Calculix/`. On a cluster, obtain a GPU allocation before running the examples.
+Run the commands below from `CalculiX-with-Solved-Tech/`. On a cluster, obtain a GPU allocation before running the examples.
 
 ## 1. Requirements
 

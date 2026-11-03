@@ -2,7 +2,7 @@
 
 [English](BUILD-AND-RUN.md) | [简体中文](BUILD-AND-RUN.zh-CN.md) · [首页](../README.zh-CN.md)
 
-以下命令均在`Calculix/`目录中运行。使用集群时，请先申请GPU计算资源。
+以下命令均在`CalculiX-with-Solved-Tech/`目录中运行。使用集群时，请先申请GPU计算资源。
 
 ## 1. 环境依赖
 

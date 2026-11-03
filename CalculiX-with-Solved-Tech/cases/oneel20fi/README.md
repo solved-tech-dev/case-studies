@@ -1,20 +1,20 @@
-# Dam
+# Oneel20fi
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-Planar orthotropic diffusion with CPS8 elements, representing a groundwater/scalar-diffusion analogy. The two prescribed boundary values are 8.5344 and 3.9624.
+A unit-cube heat-transfer model with C3D20R elements, conductivity 50, one face at temperature 0, and convection to ambient −12 with coefficient 10. The analytic steady solution is T=−2x, with flux (100,0,0).
 
 ## Model parameters
 
 | Item | Value |
 |---|---|
-| Element type | CPS8 |
-| Mesh dimension | 2D |
-| Subdivision | 32 |
-| Nodes | 985,756 |
-| Elements | 327,680 |
-| Equations n | 984,474 |
-| Complete nnz | 15,390,186 |
+| Element type | C3D20R |
+| Mesh dimension | 3D |
+| Subdivision | 44 |
+| Nodes | 358,425 |
+| Elements | 85,184 |
+| Equations n | 352,440 |
+| Complete nnz | 19,849,804 |
 | Linear systems per application | 2 |
 
 ## Files
@@ -26,13 +26,13 @@ Planar orthotropic diffusion with CPS8 elements, representing a groundwater/scal
 
 ## Run
 
-From `Calculix/`, after [building and configuring the executable](../../docs/BUILD-AND-RUN.md):
+From `CalculiX-with-Solved-Tech/`, after [building and configuring the executable](../../docs/BUILD-AND-RUN.md):
 
 ```bash
 mkdir -p _work/runs
-python3 tools/run_case.py dam \
+python3 tools/run_case.py oneel20fi \
   --binary _work/build/ccx_pangulu \
-  --output _work/runs/dam
+  --output _work/runs/oneel20fi
 ```
 
 Add `--profile small` and choose another output directory to use the upstream mesh. The adapter uses L0 ordering and L2 structural reuse, updating coefficients and refactorizing on graph-unchanged calls.

@@ -1,20 +1,20 @@
-# Oneel20fi
+# Ax6ht
 
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-采用C3D20R单元的单位立方体导热模型，导热系数为50，一面温度为0，对面向环境温度−12、换热系数10的介质散热。稳态解析解为T=−2x，热流为(100,0,0)。
+采用二次CAX6三角形的轴对称稳态导热模型，导热系数为50，节点1和46分别指定温度0和100。点约束附近的局部场随网格加密变化。
 
 ## 模型参数
 
 | 项目 | 数值 |
 |---|---|
-| 单元类型 | C3D20R |
-| 网格维度 | 3维 |
-| 细分参数 | 44 |
-| 节点数 | 358,425 |
-| 单元数 | 85,184 |
-| 方程阶数n | 352,440 |
-| 完整nnz | 19,849,804 |
+| 单元类型 | CAX6 |
+| 网格维度 | 2维轴对称 |
+| 细分参数 | 125 |
+| 节点数 | 1,002,501 |
+| 单元数 | 500,000 |
+| 方程阶数n | 1,002,499 |
+| 完整nnz | 11,509,973 |
 | 每个完整应用的线性系统数 | 2 |
 
 ## 文件说明
@@ -26,13 +26,13 @@
 
 ## 运行
 
-按[构建说明](../../docs/BUILD-AND-RUN.zh-CN.md)完成编译与环境配置后，在`Calculix/`运行：
+按[构建说明](../../docs/BUILD-AND-RUN.zh-CN.md)完成编译与环境配置后，在`CalculiX-with-Solved-Tech/`运行：
 
 ```bash
 mkdir -p _work/runs
-python3 tools/run_case.py oneel20fi \
+python3 tools/run_case.py ax6ht \
   --binary _work/build/ccx_pangulu \
-  --output _work/runs/oneel20fi
+  --output _work/runs/ax6ht
 ```
 
 添加`--profile small`并选择另一个输出目录可运行上游网格。适配器采用L0排序和L2结构复用，图不变时更新系数并执行数值重分解。
