@@ -14,8 +14,8 @@ The adapter, project tools, tests, and documentation authored by 解得科技 us
 
 - [Build and run](docs/BUILD-AND-RUN.md): dependencies, compilation, and example commands.
 - [Integration](docs/INTEGRATION.md): solver entry points, data conversion, and structural reuse.
-- [Examples](docs/CASES.md): physical models, mesh parameters, and visualizations.
-- [Results and validation](docs/RESULTS.md): hardware, timing definitions, and numerical checks.
+- [Examples](docs/CASES.md): physical models and mesh parameters.
+- [Checking a calculation](docs/VALIDATION.md): residual checks and physical-field validation.
 - [Code organization](docs/OWNERSHIP.md): CalculiX components and integration components.
 - [License notice](LICENSE-NOTICE.md).
 
@@ -30,8 +30,6 @@ provenance/upstream/      CalculiX 2.23 source archive and license
 patches/                 Optional Newton-stage timing patch
 tools/                   Build, run, validation, and mesh-generation tools
 tests/                   Input-preparation and coefficient-update checks
-figures/                 Example result images
-results/                 Benchmark and validation data
 docs/                    English and Chinese documentation
 ```
 

@@ -37,6 +37,4 @@ python3 tools/run_case.py pan \
 
 Add `--profile small` and choose another output directory to use the upstream mesh. The adapter uses L0 ordering and L2 structural reuse, updating coefficients and refactorizing on graph-unchanged calls.
 
-![Pan](../../figures/pan.png)
-
-See [Examples](../../docs/CASES.md) for the physical interpretation and [Results and validation](../../docs/RESULTS.md) for checks and timings.
+See [Examples](../../docs/CASES.md) for the physical interpretation and [Checking a calculation](../../docs/VALIDATION.md) for numerical checks.

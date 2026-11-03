@@ -33,7 +33,7 @@ python3 tools/build.py \
   --spooles-root /path/to/external/SPOOLES.2.2 \
   --arpack-libs "/path/to/external/libarpack.a" \
   --blas-libs "-L/path/to/external/openblas/lib -lopenblas" \
-  --workspace _work/build --jobs 16 --timing
+  --workspace _work/build --jobs 16
 ```
 
 脚本将`provenance/upstream/ccx_2.23.src.tar.bz2`解压到工作目录，编译CalculiX与适配器，生成`_work/build/ccx_pangulu`。构建采用默认32位CalculiX整数接口和LP64数值库。
@@ -98,11 +98,11 @@ python3 tools/run_case.py dam \
 | `application-exit.json` | 退出状态与应用运行时间 |
 | `resources.txt` | GNU time的CPU、内存统计，可用时生成 |
 | `actual.call*.csr.gz` | 每次调用的完整矩阵与右端项 |
-| `log-validation.json` | 规模、调用次数、残差及计时检查 |
+| `log-validation.json` | 规模、调用次数、残差及分析／重分解顺序 |
 | `field-validation.json` | 温度、热流、边界及平衡检查 |
 | `validation.json` | 运行检查的汇总状态 |
 
-如需与同网格参考场比较，可添加`--reference-frd /path/to/reference.frd.gz`。计时定义与性能统计见[性能与验证](RESULTS.zh-CN.md)。
+如需与同网格参考场比较，可添加`--reference-frd /path/to/reference.frd.gz`。残差与物理场检查见[计算结果检查](VALIDATION.zh-CN.md)。
 
 ## 6. 可选：生成其他网格
 

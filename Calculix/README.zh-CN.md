@@ -14,8 +14,8 @@ PanguLU是解得科技的解法器产品。如需购买PanguLU并获取许可证
 
 - [构建与运行](docs/BUILD-AND-RUN.zh-CN.md)：环境依赖、编译和案例运行命令。
 - [接入原理](docs/INTEGRATION.zh-CN.md)：求解入口、数据转换与结构复用。
-- [案例介绍](docs/CASES.zh-CN.md)：物理模型、网格参数和可视化结果。
-- [性能与验证](docs/RESULTS.zh-CN.md)：测试硬件、计时口径与数值检查。
+- [案例介绍](docs/CASES.zh-CN.md)：物理模型与网格参数。
+- [计算结果检查](docs/VALIDATION.zh-CN.md)：残差检查与物理场验证。
 - [代码结构与归属](docs/OWNERSHIP.zh-CN.md)：CalculiX原有部分和接入组件。
 - [许可说明](LICENSE-NOTICE.zh-CN.md)。
 
@@ -30,8 +30,6 @@ provenance/upstream/      CalculiX 2.23源码包及许可证
 patches/                 可选的Newton阶段计时补丁
 tools/                   构建、运行、验证及网格生成工具
 tests/                   输入准备与系数更新检查
-figures/                 案例结果静态图
-results/                 性能与验证数据
 docs/                    中英文使用文档
 ```
 

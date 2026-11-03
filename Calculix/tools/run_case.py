@@ -66,7 +66,7 @@ if rc==0:
 qualified=rc==0 and check.returncode==0 and physical is not None and physical.returncode==0
 (out/'validation.json').write_text(json.dumps(dict(status='passed' if qualified else 'failed',
     profile=args.profile,log_checks_passed=check.returncode==0,physical_checks_passed=physical is not None and physical.returncode==0,
-    qualification='one integration/reproduction check; not a three-repeat benchmark',
+    qualification='integration_and_physical_correctness',
     reference_field_comparison=args.reference_frd is not None),indent=2)+'\n')
 print('Run preserved:',out)
 raise SystemExit(0 if qualified else 1)

@@ -33,7 +33,7 @@ python3 tools/build.py \
   --spooles-root /path/to/external/SPOOLES.2.2 \
   --arpack-libs "/path/to/external/libarpack.a" \
   --blas-libs "-L/path/to/external/openblas/lib -lopenblas" \
-  --workspace _work/build --jobs 16 --timing
+  --workspace _work/build --jobs 16
 ```
 
 The script extracts `provenance/upstream/ccx_2.23.src.tar.bz2` into the workspace, compiles CalculiX and the adapter, and creates `_work/build/ccx_pangulu`. It uses the default 32-bit CalculiX integer interface and LP64 numerical libraries.
@@ -98,11 +98,11 @@ Use an exclusive GPU and run the examples sequentially. The runner uses 4 assemb
 | `application-exit.json` | Exit status and application elapsed time |
 | `resources.txt` | GNU time CPU/memory statistics, when available |
 | `actual.call*.csr.gz` | Complete matrix and right-hand side for each call |
-| `log-validation.json` | Dimensions, solver calls, residuals, and timing checks |
+| `log-validation.json` | Dimensions, solver calls, residuals, and analysis/refactorization sequence |
 | `field-validation.json` | Temperature, heat-flux, boundary, and balance checks |
 | `validation.json` | Combined run-check status |
 
-To compare with a reference field on the same mesh, add `--reference-frd /path/to/reference.frd.gz`. Timing definitions and benchmark statistics are described in [Results and validation](RESULTS.md).
+To compare with a reference field on the same mesh, add `--reference-frd /path/to/reference.frd.gz`. See [Checking a calculation](VALIDATION.md) for the residual and physical-field checks.
 
 ## 6. Optional: generate a different mesh
 

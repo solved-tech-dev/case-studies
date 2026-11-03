@@ -34,7 +34,7 @@ The PanguLU handle, matrix pattern, and coefficient arrays persist across graph-
 
 The CalculiX cleanup entry restores the application thread setting. PanguLU objects are released when the graph changes or the process exits. The adapter uses process-local state and is intended for one model per process.
 
-The supplied steady-state models each use one increment. Capacitor has one linear-system call; the other four examples have two. See [Results and validation](RESULTS.md) for the measured trajectories.
+The supplied steady-state models each use one increment. Capacitor has one linear-system call; the other four examples have two. See [Checking a calculation](VALIDATION.md) for the log and field checks.
 
 ## Timing output
 

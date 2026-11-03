@@ -37,6 +37,4 @@ python3 tools/run_case.py oneel20fi \
 
 添加`--profile small`并选择另一个输出目录可运行上游网格。适配器采用L0排序和L2结构复用，图不变时更新系数并执行数值重分解。
 
-![Oneel20fi](../../figures/oneel20fi.png)
-
-物理含义见[案例介绍](../../docs/CASES.zh-CN.md)，检查与计时见[性能与验证](../../docs/RESULTS.zh-CN.md)。
+物理含义见[案例介绍](../../docs/CASES.zh-CN.md)，数值检查见[计算结果检查](../../docs/VALIDATION.zh-CN.md)。
