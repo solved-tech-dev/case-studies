@@ -1,0 +1,140 @@
+--- a/nonlingeo.c
++++ b/nonlingeo.c
+@@ -19,6 +19,7 @@
+ #include <string.h>
+ #include <math.h>
+ #include <stdlib.h>
++#include <time.h>
+ #include "CalculiX.h"
+ #include "mortar.h"
+ #ifdef SPOOLES
+@@ -38,6 +39,25 @@
+ #endif
+ 
+ #define max(a,b) ((a) >= (b) ? (a) : (b))
++
++static double ccx_newton_now(void)
++{
++  struct timespec ts;
++  clock_gettime(CLOCK_MONOTONIC,&ts);
++  return (double)ts.tv_sec+1.e-9*(double)ts.tv_nsec;
++}
++
++static void ccx_newton_end(ITG step,ITG increment,ITG attempt,
++                           ITG iteration,double started,ITG icntrl,
++                           ITG icutb)
++{
++  printf(" [CCX_NEWTON_TIMING] step=%" ITGFORMAT
++         " increment=%" ITGFORMAT " attempt=%" ITGFORMAT
++         " iteration=%" ITGFORMAT " seconds=%.9f icntrl=%" ITGFORMAT
++         " icutb=%" ITGFORMAT "\n",step,increment,attempt,iteration,
++         ccx_newton_now()-started,icntrl,icutb);
++  fflush(stdout);
++}
+ 
+ void nonlingeo(double **cop,ITG *nk,ITG **konp,ITG **ipkonp,char **lakonp,
+ 	       ITG *ne,
+@@ -139,7 +159,8 @@
+     *kslav=NULL,*lslav=NULL,*ktot=NULL,*ltot=NULL,nmasts,neqtot,
+     intpointvarm,calcul_fn,calcul_f,calcul_qa,calcul_cauchy,ikin,
+     intpointvart,*jqbi=NULL,*irowbi=NULL,*jqib=NULL,*irowib=NULL,
+-    idispfrdonly,*inumcp=NULL,nmethodold=*nmethod;
++    idispfrdonly,*inumcp=NULL,nmethodold=*nmethod,
++    ccx_newton_iteration=0,ccx_newton_attempt=0;
+ 
+   double *stn=NULL,*v=NULL,*een=NULL,cam[5],*epn=NULL,*cg=NULL,
+     *cdn=NULL,*pslavsurfold=NULL,*fextload=NULL,
+@@ -177,7 +198,9 @@
+     *coefmpcf=NULL,*xbounf=NULL,*xloadf=NULL,*xbounoldf=NULL,
+     *xbounactf=NULL,*xloadoldf=NULL,*xloadactf=NULL,*auw=NULL,*volddof=NULL,
+     *qb=NULL,*aloc=NULL,dtmin,*fric=NULL,*aubi=NULL,*auib=NULL,
+-    *fullgmatrix=NULL,*fullr=NULL,*alglob=NULL,*damn=NULL,*errn=NULL;
++    *fullgmatrix=NULL,*fullr=NULL,*alglob=NULL,*damn=NULL,*errn=NULL,
++    ccx_newton_started=0.,ccx_linear_started=0.,
++    ccx_pre_linear_elapsed=0.,ccx_linear_block_elapsed=0.;
+ 	 
+   FILE *f1;
+ 
+@@ -2218,6 +2241,18 @@
+ 
+     while(icntrl==0){
+ 
++      ccx_newton_iteration=iit;
++      ccx_newton_attempt=icutb+1;
++      ccx_newton_started=ccx_newton_now();
++      ccx_linear_started=0.;
++      ccx_pre_linear_elapsed=0.;
++      ccx_linear_block_elapsed=0.;
++      printf(" [CCX_NEWTON_START] step=%" ITGFORMAT
++             " increment=%" ITGFORMAT " attempt=%" ITGFORMAT
++             " iteration=%" ITGFORMAT "\n",*istep,iinc,
++             ccx_newton_attempt,ccx_newton_iteration);
++      fflush(stdout);
++
+ #ifdef COMPANY
+       FORTRAN(uiter,(&iit));
+ #endif	  
+@@ -2292,6 +2327,9 @@
+ 			    &energyref,&emax,&r_abs,&enetoll,energyini,
+ 			    &allwkini,&temax,&sizemaxinc,&ne0,&neini,&dampwk,
+ 			    &dampwkini,energystartstep);
++	    ccx_newton_end(*istep,iinc,ccx_newton_attempt,
++	                   ccx_newton_iteration,ccx_newton_started,
++	                   icntrl,icutb);
+ 	    continue;
+ 	  }
+ 	}
+@@ -2864,6 +2902,16 @@
+ 	for(k=0;k<neq[1]+1;++k){printf("jq=%" ITGFORMAT ",%d\n",k,jq[k]);}
+ 	for(k=0;k<neq[1];++k){printf("icol=%" ITGFORMAT ",%d %d\n",k,icol[k],jq[k+1]-jq[k]);}*/
+       
++	ccx_pre_linear_elapsed=ccx_newton_now()-ccx_newton_started;
++	ccx_linear_started=ccx_newton_now();
++	printf(" [CCX_NEWTON_PHASE] step=%" ITGFORMAT
++	       " increment=%" ITGFORMAT " attempt=%" ITGFORMAT
++	       " iteration=%" ITGFORMAT
++	       " stage=pre_linear seconds=%.9f\n",*istep,iinc,
++	       ccx_newton_attempt,ccx_newton_iteration,
++	       ccx_pre_linear_elapsed);
++	fflush(stdout);
++
+ 	if(*isolver==0){
+ #ifdef SPOOLES
+ 	  if(*ithermal<2){
+@@ -3016,6 +3064,15 @@
+ #endif
+ 	}
+ 	  
++	ccx_linear_block_elapsed=ccx_newton_now()-ccx_linear_started;
++	printf(" [CCX_NEWTON_PHASE] step=%" ITGFORMAT
++	       " increment=%" ITGFORMAT " attempt=%" ITGFORMAT
++	       " iteration=%" ITGFORMAT
++	       " stage=linear_solver_block seconds=%.9f\n",*istep,iinc,
++	       ccx_newton_attempt,ccx_newton_iteration,
++	       ccx_linear_block_elapsed);
++	fflush(stdout);
++
+ 	if(*mortar<=1){
+ 	  if(isensitivity){
+ 	    SFREE(adcpy);MNEW(adcpy,double,neq[1]);
+@@ -3476,6 +3533,20 @@
+ 	}
+ 	iflagact=0;
+       }
++
++      if(ccx_linear_started>0.){
++	printf(" [CCX_NEWTON_PHASE] step=%" ITGFORMAT
++	       " increment=%" ITGFORMAT " attempt=%" ITGFORMAT
++	       " iteration=%" ITGFORMAT
++	       " stage=post_linear seconds=%.9f\n",*istep,iinc,
++	       ccx_newton_attempt,ccx_newton_iteration,
++	       ccx_newton_now()-ccx_newton_started-
++	       ccx_pre_linear_elapsed-ccx_linear_block_elapsed);
++	fflush(stdout);
++      }
++      ccx_newton_end(*istep,iinc,ccx_newton_attempt,
++                     ccx_newton_iteration,ccx_newton_started,
++                     icntrl,icutb);
+     }
+ 
+     if((*mortar==-1)&&(masslesslinear==0)&&(ncont!=0))

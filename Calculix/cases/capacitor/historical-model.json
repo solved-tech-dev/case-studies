@@ -1,0 +1,27 @@
+{
+  "source": "source/capacitor.inp",
+  "subdivision_factor": [
+    3,
+    16,
+    400
+  ],
+  "mesh_dimension": 3,
+  "original_nodes": 108,
+  "original_elements": 10,
+  "original_reference_nodes": [],
+  "minimum_child_Gauss_Jacobian": 1.1392707448408486e-07,
+  "geometry": "exact subdivision of original isoparametric parent elements, coordinate merge1e-10 source units",
+  "nodal_loading": "retain original nodal point forces at original node IDs; do not multiply each-node forces onto new face nodes",
+  "original_physics_cards_unchanged": true,
+  "case": "capacitor",
+  "level": "million",
+  "kind": "C3D20",
+  "input_nodes": 969687,
+  "elements": 192000,
+  "used_nodes": 969687,
+  "source_files_retained": true,
+  "actual_n": null,
+  "actual_full_nnz": null,
+  "output": "complete native NT/RFL DAT and NDTEMP/FLUX FRD",
+  "coordinate_serialization": "12-decimal scientific notation, every CCX field <=20 characters"
+}

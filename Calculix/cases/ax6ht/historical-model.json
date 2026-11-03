@@ -1,0 +1,23 @@
+{
+  "source": "source/ax6ht.inp",
+  "subdivision_factor": 125,
+  "mesh_dimension": 2,
+  "original_nodes": 85,
+  "original_elements": 32,
+  "original_reference_nodes": [],
+  "minimum_child_Gauss_Jacobian": 3.1999996703590995e-05,
+  "original_physics_cards_unchanged": true,
+  "geometry": "exact quadratic T6 parent subdivision; r,z axisymmetric geometry retained",
+  "boundary": "original point temperatures ONLY at node1=0 and46=100; not expanded to edges; mesh-dependent localization is not a converged engineering prediction",
+  "case": "ax6ht",
+  "level": "million",
+  "kind": "CAX6",
+  "input_nodes": 1002501,
+  "elements": 500000,
+  "used_nodes": 1002501,
+  "source_files_retained": true,
+  "actual_n": null,
+  "actual_full_nnz": null,
+  "output": "complete native NT/RFL DAT and NDTEMP/FLUX FRD; original scalar physics/control cards retained",
+  "coordinate_serialization": "12-decimal scientific notation, every CCX field <=20 characters"
+}

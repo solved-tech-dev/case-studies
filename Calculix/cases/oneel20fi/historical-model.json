@@ -1,0 +1,23 @@
+{
+  "source": "source/oneel20fi.inp",
+  "subdivision_factor": 44,
+  "mesh_dimension": 3,
+  "original_nodes": 20,
+  "original_elements": 1,
+  "original_reference_nodes": [],
+  "minimum_child_Gauss_Jacobian": 1.4674116948841368e-06,
+  "geometry": "exact subdivision of original isoparametric parent elements, coordinate merge1e-10 source units",
+  "nodal_loading": "retain original nodal point forces at original node IDs; do not multiply each-node forces onto new face nodes",
+  "original_physics_cards_unchanged": true,
+  "case": "oneel20fi",
+  "level": "screen350k",
+  "kind": "C3D20R",
+  "input_nodes": 358425,
+  "elements": 85184,
+  "used_nodes": 358425,
+  "source_files_retained": true,
+  "actual_n": null,
+  "actual_full_nnz": null,
+  "output": "complete native NT/RFL DAT and NDTEMP/FLUX FRD",
+  "coordinate_serialization": "12-decimal scientific notation, every CCX field <=20 characters"
+}

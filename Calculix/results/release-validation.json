@@ -1,0 +1,457 @@
+{
+  "status": "technical_checks_passed",
+  "scope": [
+    "dam",
+    "ax6ht",
+    "capacitor",
+    "oneel20fi",
+    "pan"
+  ],
+  "clean_source_build": {
+    "status": "passed",
+    "compiled_source_files": 1168,
+    "old_CCX_objects_used": false,
+    "old_optional_stubs_used": false,
+    "timing_patch_enabled": true
+  },
+  "small_complete_applications": {
+    "status": "passed",
+    "cases_passed": 5,
+    "complete_temperature_and_flux_checked": true
+  },
+  "changed_coefficient_and_RHS_check": {
+    "status": "passed",
+    "same_graph": true,
+    "changed_diagonal_entries": 3,
+    "known_solution": [
+      1,
+      2,
+      3
+    ],
+    "native_analysis_count": 1,
+    "numeric_factorizations": 2
+  },
+  "fixed_input_decompression": "five_of_five_byte_identical_to_retained_inputs",
+  "fixed_five_status": "five_of_five_passed",
+  "observed_fixed_passed": [
+    "dam",
+    "ax6ht",
+    "capacitor",
+    "oneel20fi",
+    "pan"
+  ],
+  "full_reference_comparison": "five_of_five_passed_complete_printed_temperature_and_flux",
+  "repeat_policy": "one release-reproduction attempt per case, not a min3 benchmark",
+  "PanguLU_SDK_or_license_bundled": false,
+  "externally_published": false,
+  "redistribution_and_repository_license": "project_additions_AGPL-3.0-only;upstream_terms_retained",
+  "verification_date": "2026-11-03",
+  "scheduler": "five_complete_applications_COMPLETED_exit_0",
+  "hardware": "one_A100_40GB_40_host_CPU_cores_100GiB_host_memory",
+  "source_control": "fixed_input_bytes_unchanged_no_zero_pruning_original_physics_and_step_controls_retained",
+  "archive": "complete_original_new_run_evidence_retained_privately_not_bundled",
+  "rows": [
+    {
+      "case": "dam",
+      "status": "passed",
+      "dimensions": [
+        {
+          "n": 984474,
+          "full_nnz": 15390186
+        },
+        {
+          "n": 984474,
+          "full_nnz": 15390186
+        }
+      ],
+      "residuals": [
+        2.15584211628e-14,
+        3.218678452726e-12
+      ],
+      "native_phases": [
+        {
+          "phase": "analysis_order_symbolic_preprocess",
+          "wall_s": 5.059385019,
+          "CPU_s": 7.982636849
+        },
+        {
+          "phase": "numeric",
+          "wall_s": 0.417381693,
+          "CPU_s": 0.399254959
+        },
+        {
+          "phase": "solve",
+          "wall_s": 0.011642419,
+          "CPU_s": 0.011641474
+        },
+        {
+          "phase": "refactor_numeric",
+          "wall_s": 1.143006835,
+          "CPU_s": 1.615351426
+        },
+        {
+          "phase": "solve",
+          "wall_s": 0.011492131,
+          "CPU_s": 0.011489975
+        }
+      ],
+      "native_wall_sum_s": 6.642908096999999,
+      "whole_application_wall_s_including_evidence": 77.30901575111784,
+      "physical_checks": {
+        "status": "passed",
+        "case": "dam",
+        "used_nodes": 985756,
+        "full_fields": {
+          "NDTEMP": {
+            "nodes": 985756,
+            "finite": true,
+            "reference_relative_L2": 0.0
+          },
+          "FLUX": {
+            "nodes": 985756,
+            "finite": true,
+            "reference_relative_L2": 5.5985671437086086e-09
+          }
+        },
+        "reference_comparison_performed": true,
+        "temperature_range": [
+          3.9624,
+          8.5344
+        ],
+        "boundary_heat_balance_relative": 2.495067235517096e-10,
+        "native_volume": 1067.551,
+        "Newton_iterations": [
+          1,
+          2
+        ],
+        "physical_time": "original single steady increment, end time 1"
+      },
+      "extra_same_factor_solves": [
+        0,
+        0
+      ],
+      "statistics": "single full application release reproduction; not min3"
+    },
+    {
+      "case": "ax6ht",
+      "status": "passed",
+      "dimensions": [
+        {
+          "n": 1002499,
+          "full_nnz": 11509973
+        },
+        {
+          "n": 1002499,
+          "full_nnz": 11509973
+        }
+      ],
+      "residuals": [
+        4.479795486194e-13,
+        2.353879627079e-11
+      ],
+      "native_phases": [
+        {
+          "phase": "analysis_order_symbolic_preprocess",
+          "wall_s": 3.414245694,
+          "CPU_s": 6.648770383
+        },
+        {
+          "phase": "numeric",
+          "wall_s": 0.297169137,
+          "CPU_s": 0.29723401
+        },
+        {
+          "phase": "solve",
+          "wall_s": 0.013042095,
+          "CPU_s": 0.013026696
+        },
+        {
+          "phase": "refactor_numeric",
+          "wall_s": 0.919715244,
+          "CPU_s": 1.397065879
+        },
+        {
+          "phase": "solve",
+          "wall_s": 0.010003436,
+          "CPU_s": 0.010066775
+        }
+      ],
+      "native_wall_sum_s": 4.654175606,
+      "whole_application_wall_s_including_evidence": 205.6978060719557,
+      "physical_checks": {
+        "status": "passed",
+        "case": "ax6ht",
+        "used_nodes": 1002501,
+        "full_fields": {
+          "NDTEMP": {
+            "nodes": 1002501,
+            "finite": true,
+            "reference_relative_L2": 0.0
+          },
+          "FLUX": {
+            "nodes": 1002501,
+            "finite": true,
+            "reference_relative_L2": 4.183614351053443e-11
+          }
+        },
+        "reference_comparison_performed": true,
+        "temperature_range": [
+          0.0,
+          100.0
+        ],
+        "boundary_heat_balance_relative": 1.0435237604295303e-12,
+        "interpretation": "Original point temperatures; mesh-dependent localization, not an edge-temperature engineering model",
+        "native_volume": 1.117011,
+        "Newton_iterations": [
+          1,
+          2
+        ],
+        "physical_time": "original single steady increment, end time 1"
+      },
+      "extra_same_factor_solves": [
+        0,
+        0
+      ],
+      "statistics": "single full application release reproduction; not min3"
+    },
+    {
+      "case": "capacitor",
+      "status": "passed",
+      "dimensions": [
+        {
+          "n": 952073,
+          "full_nnz": 47134131
+        }
+      ],
+      "residuals": [
+        8.369863314273e-15
+      ],
+      "native_phases": [
+        {
+          "phase": "analysis_order_symbolic_preprocess",
+          "wall_s": 8.799209342,
+          "CPU_s": 15.94411171
+        },
+        {
+          "phase": "numeric",
+          "wall_s": 1.617045244,
+          "CPU_s": 1.617692337
+        },
+        {
+          "phase": "solve",
+          "wall_s": 0.019472091,
+          "CPU_s": 0.019510833
+        }
+      ],
+      "native_wall_sum_s": 10.435726677,
+      "whole_application_wall_s_including_evidence": 61.643245748011395,
+      "physical_checks": {
+        "status": "passed",
+        "case": "capacitor",
+        "used_nodes": 969687,
+        "full_fields": {
+          "NDTEMP": {
+            "nodes": 969687,
+            "finite": true,
+            "reference_relative_L2": 0.0
+          },
+          "FLUX": {
+            "nodes": 969687,
+            "finite": true,
+            "reference_relative_L2": 4.064710924526743e-13
+          }
+        },
+        "reference_comparison_performed": true,
+        "temperature_range": [
+          1.0,
+          2.0
+        ],
+        "boundary_heat_balance_relative": 3.2243549767044475e-08,
+        "potential_RMS_vs_radial_analytic": 2.8462191203322234e-07,
+        "surface_flux_relative_error_vs_analytic": 2.551565795150257e-05,
+        "native_volume": 0.2617994,
+        "Newton_iterations": [
+          1
+        ],
+        "physical_time": "original single steady increment, end time 1"
+      },
+      "extra_same_factor_solves": [
+        0
+      ],
+      "statistics": "single full application release reproduction; not min3"
+    },
+    {
+      "case": "oneel20fi",
+      "status": "passed",
+      "dimensions": [
+        {
+          "n": 352440,
+          "full_nnz": 19849804
+        },
+        {
+          "n": 352440,
+          "full_nnz": 19849804
+        }
+      ],
+      "residuals": [
+        3.935987459091e-13,
+        1.162303171407e-14
+      ],
+      "native_phases": [
+        {
+          "phase": "analysis_order_symbolic_preprocess",
+          "wall_s": 4.597468608,
+          "CPU_s": 11.520473151
+        },
+        {
+          "phase": "numeric",
+          "wall_s": 2.100372454,
+          "CPU_s": 2.101428649
+        },
+        {
+          "phase": "solve",
+          "wall_s": 0.019194116,
+          "CPU_s": 0.019260437
+        },
+        {
+          "phase": "refactor_numeric",
+          "wall_s": 3.487555199,
+          "CPU_s": 3.972423326
+        },
+        {
+          "phase": "solve",
+          "wall_s": 0.019049888,
+          "CPU_s": 0.019068169
+        }
+      ],
+      "native_wall_sum_s": 10.223640265,
+      "whole_application_wall_s_including_evidence": 42.06429285486229,
+      "physical_checks": {
+        "status": "passed",
+        "case": "oneel20fi",
+        "used_nodes": 358425,
+        "full_fields": {
+          "NDTEMP": {
+            "nodes": 358425,
+            "finite": true,
+            "reference_relative_L2": 0.0
+          },
+          "FLUX": {
+            "nodes": 358425,
+            "finite": true,
+            "reference_relative_L2": 1.3376887798954796e-14
+          }
+        },
+        "reference_comparison_performed": true,
+        "temperature_range": [
+          -2.0,
+          0.0
+        ],
+        "boundary_heat_balance_relative": 1.0121472734803138e-16,
+        "temperature_RMS_vs_T_minus2x": 2.0247740236337218e-07,
+        "flux_RMS_vs_100_0_0": 0.0040000000000048885,
+        "native_volume": 1.0,
+        "Newton_iterations": [
+          1,
+          2
+        ],
+        "physical_time": "original single steady increment, end time 1"
+      },
+      "extra_same_factor_solves": [
+        0,
+        0
+      ],
+      "statistics": "single full application release reproduction; not min3"
+    },
+    {
+      "case": "pan",
+      "status": "passed",
+      "dimensions": [
+        {
+          "n": 890630,
+          "full_nnz": 10206762
+        },
+        {
+          "n": 890630,
+          "full_nnz": 10206762
+        }
+      ],
+      "residuals": [
+        1.285454117085e-10,
+        9.322256526965e-13
+      ],
+      "native_phases": [
+        {
+          "phase": "analysis_order_symbolic_preprocess",
+          "wall_s": 3.24366502,
+          "CPU_s": 6.36214249
+        },
+        {
+          "phase": "numeric",
+          "wall_s": 0.229303804,
+          "CPU_s": 0.227829638
+        },
+        {
+          "phase": "solve",
+          "wall_s": 0.010075121,
+          "CPU_s": 0.010150273
+        },
+        {
+          "phase": "refactor_numeric",
+          "wall_s": 0.768315534,
+          "CPU_s": 1.209162454
+        },
+        {
+          "phase": "solve",
+          "wall_s": 0.010022442,
+          "CPU_s": 0.010018732
+        }
+      ],
+      "native_wall_sum_s": 4.261381921,
+      "whole_application_wall_s_including_evidence": 65.49064861587249,
+      "physical_checks": {
+        "status": "passed",
+        "case": "pan",
+        "used_nodes": 890630,
+        "full_fields": {
+          "NDTEMP": {
+            "nodes": 890630,
+            "finite": true,
+            "reference_relative_L2": 0.0
+          },
+          "FLUX": {
+            "nodes": 890630,
+            "finite": true,
+            "reference_relative_L2": 2.063144136947644e-09
+          }
+        },
+        "reference_comparison_performed": true,
+        "temperature_range": [
+          339.7624,
+          450.1608
+        ],
+        "axisymmetric_full360_input": 714.9872180488671,
+        "Robin_output": -714.9872167555866,
+        "Robin_heat_balance_relative": 1.8088163185241327e-09,
+        "native_volume": 1.668429e-06,
+        "Newton_iterations": [
+          1,
+          2
+        ],
+        "physical_time": "original single steady increment, end time 1"
+      },
+      "extra_same_factor_solves": [
+        0,
+        0
+      ],
+      "statistics": "single full application release reproduction; not min3"
+    }
+  ],
+  "release_scope": [
+    "dam",
+    "ax6ht",
+    "capacitor",
+    "oneel20fi",
+    "pan"
+  ]
+}

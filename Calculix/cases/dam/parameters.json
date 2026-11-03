@@ -1,0 +1,143 @@
+{
+  "case": "dam",
+  "physics": "二维正交各向异性地下水/标量扩散类比，CPS8；非三维船体或结构力学模型",
+  "source_kind": "official_ccx_2.23_verification",
+  "source_url": "https://www.dhondt.de/ccx_2.23.test.tar.bz2",
+  "source_revision": "CalculiX2.23 test distribution",
+  "source_redistribution_review": "pending",
+  "input": "input/model.inp.gz",
+  "original_inputs": "source/",
+  "mesh": {
+    "subdivision_factor": 32,
+    "dimension": 2,
+    "element_type": "CPS8",
+    "nodes": 985756,
+    "elements": 327680
+  },
+  "measured_system": {
+    "n": 984474,
+    "stored_full_nnz": 15390186,
+    "linear_calls_per_complete_application": 2,
+    "explicit_zeros": "retained"
+  },
+  "solver": {
+    "package": "PanguLU26.42 CUDA12.9 ABI2",
+    "ordering": "L0",
+    "reuse_level": "L2",
+    "core": "sum all real nonoverlapping native phases",
+    "repeats": 3,
+    "statistic": "minimum of three qualified complete applications"
+  },
+  "runtime": {
+    "application_assembly_result_threads": 4,
+    "backend_host_threads": 40,
+    "reference_GPU": "A10040GB",
+    "host_memory_GiB": 100,
+    "application_timeout_seconds": 600,
+    "termination_grace_seconds": 10
+  },
+  "physical_control_and_output_cards": [
+    {
+      "header": "*MATERIAL,NAME=MAT1",
+      "data": []
+    },
+    {
+      "header": "*CONDUCTIVITY,TYPE=ORTHO",
+      "data": [
+        "1.E-2,25.E-4,1.E-4"
+      ]
+    },
+    {
+      "header": "*MATERIAL,NAME=MAT2",
+      "data": []
+    },
+    {
+      "header": "*CONDUCTIVITY,TYPE=ORTHO",
+      "data": [
+        "1.E-4,4.E-4,1.E-4"
+      ]
+    },
+    {
+      "header": "*SOLID SECTION,ELSET=EAREA1,MATERIAL=MAT1",
+      "data": []
+    },
+    {
+      "header": "*SOLID SECTION,ELSET=EAREA2,MATERIAL=MAT2",
+      "data": []
+    },
+    {
+      "header": "*INITIAL CONDITIONS,TYPE=TEMPERATURE",
+      "data": [
+        "Nall,0."
+      ]
+    },
+    {
+      "header": "*STEP",
+      "data": []
+    },
+    {
+      "header": "*HEAT TRANSFER,STEADY STATE",
+      "data": []
+    },
+    {
+      "header": "*BOUNDARY",
+      "data": [
+        "Nup,11,11,8.5344"
+      ]
+    },
+    {
+      "header": "*BOUNDARY",
+      "data": [
+        "Ndown,11,11,3.9624"
+      ]
+    },
+    {
+      "header": "*NODE PRINT,NSET=ALLN",
+      "data": [
+        "NT,RFL"
+      ]
+    },
+    {
+      "header": "*EL PRINT,ELSET=ALLE,TOTALS=ONLY",
+      "data": [
+        "EVOL"
+      ]
+    },
+    {
+      "header": "*NODE FILE,OUTPUT=2D",
+      "data": [
+        "NT"
+      ]
+    },
+    {
+      "header": "*EL FILE,OUTPUT=2D",
+      "data": [
+        "HFL"
+      ]
+    },
+    {
+      "header": "*END STEP",
+      "data": []
+    }
+  ],
+  "card_counts": {
+    "HEADING": 1,
+    "NODE": 1,
+    "ELEMENT": 1,
+    "NSET": 3,
+    "ELSET": 3,
+    "MATERIAL": 2,
+    "CONDUCTIVITY": 2,
+    "SOLID SECTION": 2,
+    "INITIAL CONDITIONS": 1,
+    "STEP": 1,
+    "HEAT TRANSFER": 1,
+    "BOUNDARY": 2,
+    "NODE PRINT": 1,
+    "EL PRINT": 1,
+    "NODE FILE": 1,
+    "EL FILE": 1,
+    "END STEP": 1
+  },
+  "generator_snapshot": "../../generators/calculix-search-20261027/prepare.py"
+}

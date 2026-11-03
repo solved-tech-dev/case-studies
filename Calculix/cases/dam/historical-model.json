@@ -1,0 +1,23 @@
+{
+  "source": "source/dam.inp",
+  "subdivision_factor": 32,
+  "mesh_dimension": 2,
+  "original_nodes": 1045,
+  "original_elements": 320,
+  "original_reference_nodes": [],
+  "minimum_child_Gauss_Jacobian": 5.9328251698328336e-05,
+  "geometry": "exact subdivision of original isoparametric parent elements, coordinate merge1e-10 source units",
+  "nodal_loading": "retain original nodal point forces at original node IDs; do not multiply each-node forces onto new face nodes",
+  "original_physics_cards_unchanged": true,
+  "case": "dam",
+  "level": "million",
+  "kind": "CPS8",
+  "input_nodes": 985756,
+  "elements": 327680,
+  "used_nodes": 985756,
+  "source_files_retained": true,
+  "actual_n": null,
+  "actual_full_nnz": null,
+  "output": "complete native NT/RFL DAT and NDTEMP/FLUX FRD",
+  "coordinate_serialization": "12-decimal scientific notation, every CCX field <=20 characters"
+}

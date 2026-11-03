@@ -1,0 +1,140 @@
+{
+  "case": "ax6ht",
+  "physics": "二维轴对称圆盘稳态导热，CAX6；保留原点温度及 STEP,NLGEOM",
+  "source_kind": "official_ccx_2.23_verification",
+  "source_url": "https://www.dhondt.de/ccx_2.23.test.tar.bz2",
+  "source_revision": "CalculiX2.23 test distribution",
+  "source_redistribution_review": "pending",
+  "input": "input/model.inp.gz",
+  "original_inputs": "source/",
+  "mesh": {
+    "subdivision_factor": 125,
+    "dimension": 2,
+    "element_type": "CAX6",
+    "nodes": 1002501,
+    "elements": 500000
+  },
+  "measured_system": {
+    "n": 1002499,
+    "stored_full_nnz": 11509973,
+    "linear_calls_per_complete_application": 2,
+    "explicit_zeros": "retained"
+  },
+  "solver": {
+    "package": "PanguLU26.42 CUDA12.9 ABI2",
+    "ordering": "L0",
+    "reuse_level": "L2",
+    "core": "sum all real nonoverlapping native phases",
+    "repeats": 3,
+    "statistic": "minimum of three qualified complete applications"
+  },
+  "runtime": {
+    "application_assembly_result_threads": 4,
+    "backend_host_threads": 40,
+    "reference_GPU": "A10040GB",
+    "host_memory_GiB": 100,
+    "application_timeout_seconds": 600,
+    "termination_grace_seconds": 10
+  },
+  "physical_control_and_output_cards": [
+    {
+      "header": "*MATERIAL,NAME=EL",
+      "data": []
+    },
+    {
+      "header": "*DENSITY",
+      "data": [
+        "7800."
+      ]
+    },
+    {
+      "header": "*CONDUCTIVITY",
+      "data": [
+        "50."
+      ]
+    },
+    {
+      "header": "*SPECIFIC HEAT",
+      "data": [
+        "446."
+      ]
+    },
+    {
+      "header": "*SOLID SECTION,ELSET=EALL,MATERIAL=EL",
+      "data": [
+        "0.01"
+      ]
+    },
+    {
+      "header": "*INITIAL CONDITIONS,TYPE=TEMPERATURE",
+      "data": [
+        "Nall,20."
+      ]
+    },
+    {
+      "header": "*STEP,NLGEOM",
+      "data": []
+    },
+    {
+      "header": "*HEAT TRANSFER,STEADY STATE",
+      "data": []
+    },
+    {
+      "header": "*BOUNDARY",
+      "data": [
+        "1,11,11,0.",
+        "46,11,11,100."
+      ]
+    },
+    {
+      "header": "*NODE PRINT,NSET=ALLN",
+      "data": [
+        "NT,RFL"
+      ]
+    },
+    {
+      "header": "*EL PRINT,ELSET=ALLE,TOTALS=ONLY",
+      "data": [
+        "EVOL"
+      ]
+    },
+    {
+      "header": "*NODE FILE,OUTPUT=2D",
+      "data": [
+        "NT"
+      ]
+    },
+    {
+      "header": "*EL FILE,OUTPUT=2D",
+      "data": [
+        "HFL"
+      ]
+    },
+    {
+      "header": "*END STEP",
+      "data": []
+    }
+  ],
+  "card_counts": {
+    "HEADING": 1,
+    "NODE": 1,
+    "ELEMENT": 1,
+    "NSET": 1,
+    "ELSET": 1,
+    "MATERIAL": 1,
+    "DENSITY": 1,
+    "CONDUCTIVITY": 1,
+    "SPECIFIC HEAT": 1,
+    "SOLID SECTION": 1,
+    "INITIAL CONDITIONS": 1,
+    "STEP": 1,
+    "HEAT TRANSFER": 1,
+    "BOUNDARY": 1,
+    "NODE PRINT": 1,
+    "EL PRINT": 1,
+    "NODE FILE": 1,
+    "EL FILE": 1,
+    "END STEP": 1
+  },
+  "generator_snapshot": "../../generators/calculix-search2-20261027/prepare.py"
+}
