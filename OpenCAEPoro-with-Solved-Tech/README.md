@@ -32,7 +32,7 @@ scripts/summarize-results.sh    汇总日志为CSV
 
 ```bash
 export OCP_UPSTREAM_DIR=../OpenCAEPoroX
-./scripts/prepare-source.sh
+bash scripts/prepare-source.sh
 ```
 
 默认生成：
@@ -92,7 +92,7 @@ r5含953,048,225个非零元。若HYPRE版本的ParCSR转置仍使用32位局部
 提交三个构建作业：
 
 ```bash
-./scripts/submit-builds.sh
+bash scripts/submit-builds.sh
 ```
 
 也可以分别提交：
@@ -116,7 +116,7 @@ build/linglongamg/main/testOpenCAEPoro
 构建完成后提交三组r1-r5测试：
 
 ```bash
-./scripts/test-all.sh
+bash scripts/test-all.sh
 ```
 
 测试脚本使用`normal`QoS和`00:20:00`上限。HYPRECPU的r1-r4使用`cpu9462`的64个物理核；r5单独申请116G内存并使用8个OpenMP线程，以避开外部HYPRE高线程临时内存膨胀。HYPREGPU和LinglongAMG各使用一块A100。
@@ -124,13 +124,13 @@ build/linglongamg/main/testOpenCAEPoro
 如需调整r5线程数：
 
 ```bash
-OCP_CPU_R5_THREADS=8 ./scripts/test-all.sh
+OCP_CPU_R5_THREADS=8 bash scripts/test-all.sh
 ```
 
 测试完成后汇总：
 
 ```bash
-./scripts/summarize-results.sh | tee results/summary.csv
+bash scripts/summarize-results.sh | tee results/summary.csv
 ```
 
 主要计时字段：
