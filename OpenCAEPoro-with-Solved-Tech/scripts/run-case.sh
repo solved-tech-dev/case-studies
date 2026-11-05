@@ -93,7 +93,7 @@ started_epoch="$(date +%s)"
 rc=1
 set +e
 srun --ntasks=1 --cpu-bind=cores \
-    /usr/bin/time -f 'OCP_SIMULATOR_E2E_SECONDS=%e MAX_RSS_KIB=%M EXIT_STATUS=%x' \
+    time -f 'OCP_SIMULATOR_E2E_SECONDS=%e MAX_RSS_KIB=%M EXIT_STATUS=%x' \
     "${executable}" data/spe10/spe10.data \
     method=IMPEC dtInit=0.1 dtMax=1 dtMin=0.1 > "${log_path}" 2>&1
 rc=$?
