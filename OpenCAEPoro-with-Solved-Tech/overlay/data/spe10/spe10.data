@@ -105,10 +105,10 @@ IMPEC  hypre
 
 WELSPECS
 I1  G  30  110  12000   WAT  /
-P1  G   1    1  12000  OIL  /
-P2  G  60    1  12000  OIL  /
-P3  G  60  220  12000  OIL  /
-P4  G   1  220  12000  OIL  /
+P1  G   1    1  12000   OIL  /
+P2  G  60    1  12000   OIL  /
+P3  G  60  220  12000   OIL  /
+P4  G   1  220  12000   OIL  /
 /
 
 COMPDAT
