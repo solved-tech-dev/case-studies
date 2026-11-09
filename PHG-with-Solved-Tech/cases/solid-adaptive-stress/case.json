@@ -1,0 +1,28 @@
+{
+  "id": "solid-adaptive-stress",
+  "program": "solid",
+  "input": "examples/adaptive.xml",
+  "mesh": "examples/cantilever.mesh",
+  "fields": ["Displacement"],
+  "reuse": "L0",
+  "profiles": {
+    "benchmark": {
+      "xml_updates": {
+        "model.pre_refine": "15",
+        "residual_estimator.max_dof": "1000000",
+        "residual_estimator.mem_peak": "90000"
+      },
+      "systems": [
+        [421443, 14740623],
+        [452952, 15857580],
+        [530697, 18733887],
+        [677124, 25224914],
+        [895794, 33405310],
+        [1268499, 47802493]
+      ]
+    },
+    "connection-test": {
+      "xml_updates": {"model.pre_refine": "0", "residual_estimator.max_dof": "100"}
+    }
+  }
+}

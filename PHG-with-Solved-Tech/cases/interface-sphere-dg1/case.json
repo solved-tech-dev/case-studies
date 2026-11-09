@@ -1,0 +1,18 @@
+{
+  "id": "interface-sphere-dg1",
+  "program": "interface",
+  "source": "examples/interface.c",
+  "mesh": "test/cube.dat",
+  "fields": ["u1_h", "u2_h"],
+  "reuse": "L2",
+  "common_args": ["-dof_type", "DG1", "-refine", "0", "-vtk"],
+  "profiles": {
+    "benchmark": {
+      "args": ["-refine0", "14"],
+      "systems": [[786432, 8625216]]
+    },
+    "connection-test": {
+      "args": ["-refine0", "4", "-xfem_ctol", "0"]
+    }
+  }
+}

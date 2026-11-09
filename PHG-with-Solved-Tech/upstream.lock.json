@@ -1,0 +1,4 @@
+{
+  "phg": {"url":"https://lsec.cc.ac.cn/phg/download/phg-0.9.7-20220923.tar.bz2","archive":"phg-0.9.7-20220923.tar.bz2","directory":"phg-0.9.7","sha256":"580d6b0750cdf4be5211d9e3540e635d66210f5078bc44016b140cf4629b2d41"},
+  "solid": {"url":"https://lsec.cc.ac.cn/phg/download/phg-solid.tar.gz","archive":"phg-solid.tar.gz","directory":"solid","sha256":"c47698b552297c74e8f0393b7d426fd7cd6eb76f344a2c9c186d6c7bb95dfb84"}
+}

@@ -1,0 +1,14 @@
+_work/
+.DS_Store
+._*
+build/
+runs/
+__pycache__/
+*.pyc
+*.key
+*.lic
+*.license.key
+*.so
+*.dylib
+*.o
+*.a

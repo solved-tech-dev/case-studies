@@ -1,0 +1,17 @@
+{
+  "id": "solid-static-p2",
+  "program": "solid",
+  "input": "examples/static.xml",
+  "mesh": "examples/cantilever.mesh",
+  "fields": ["Displacement"],
+  "reuse": "L0",
+  "profiles": {
+    "benchmark": {
+      "xml_updates": {"model.pre_refine": "13"},
+      "systems": [[833091, 61575691]]
+    },
+    "connection-test": {
+      "xml_updates": {"model.pre_refine": "0"}
+    }
+  }
+}
