@@ -1,0 +1,25 @@
+data_modeling  !name of obs data
+1         ! family
+1 1       !npar & inverted para 1->vp 2->rho 3->qp 4->eps 5->delta 11->log(vp) 12->log(rho) 31->log(vp/vp0) 32->log(rho/rho_0) 33->log(Q/Q_0) 34->log(1+eps)35->log(1+delta)
+0         ! src estimation 0->no 1->1 mean value 2->one per gather
+fbathy    ! bathy file
+0.        ! deadzone
+5         ! optimization method 1:STD  2:PSTD  3:NLCG  4:PNLCG  5:LBFGS  6:PLBFGS  7:TGN  8:TRN  9:PTGN  10:PTRN
+1e-4      ! convergence criterion data
+1e-4      ! convergence criterion model update
+10        ! number of nonlinear iterations
+5         ! memory parameter for l-BFGS
+5         ! maximum number of inner CG iterations for truncated Newton
+1e-4      ! threshold parameter for the preconditioner
+0         ! debug option for the optimization routines
+0.        ! lambda for Tikhonov regularization
+0. 0.     ! lambda_x, lambda_z (directional weight for Tikhonov regularization)
+0.        ! prior information regularization weights
+1         ! bound constraints
+5000.     ! upper bound
+1000.     ! lower bound
+1.        ! tolerance for bound constraints
+data_weight_file ! file for weighting
+2 20000.        !number of vgalues in weighting file and spatial step value
+
+

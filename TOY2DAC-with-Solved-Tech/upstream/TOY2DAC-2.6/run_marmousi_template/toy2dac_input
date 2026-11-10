@@ -1,0 +1,3 @@
+1            ! mode of the code (0 = MODELING, 1 = INVERSION)
+1            ! forward modeling tool (1 = ISOTROPIC, 2 = ANISOTROPIC)
+acqui        ! acquisition file name

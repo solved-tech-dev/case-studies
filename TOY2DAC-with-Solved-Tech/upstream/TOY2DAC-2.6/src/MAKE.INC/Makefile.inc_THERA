@@ -1,0 +1,124 @@
+#
+#   version 
+#
+###########################################
+###########################################
+#   SETUP WHERE IS THE linear algebra procedures
+###########################################
+###########################################
+LADIR =  /user/operto/CODES/SEISCOPE_CODES/LinAlg_MKL
+###########################################
+
+###########################################
+#  OPTIMIZATION TOOLBOX
+###########################################
+OPTIM = /seiscope/operto/SEISCOPE_CODES/TOOLS_BOX/trunk/OPTIMIZATION
+
+###########################################
+#   SETUP THE ARCHITECTURE 
+###########################################
+###########################################
+# structure 32 bits    nothing to do
+#IA=
+# structure LP64    with 32 bits integer
+# the most used environment openmpi is set for that
+IA=_lp64
+# structure ILP64    with 64 bits integer
+# require specific openmpi
+#IA=_ilp64
+
+###########################################
+#   SET SINGLE PRECISION(sp) VERSUS DOUBLE PRECISION(dp) CODE
+###########################################
+
+EXT=sp
+
+###########################################
+###########################################
+#   DONE     TENTATIVELY YOU SHOULD NOT MODIFY BELOW
+###########################################
+###########################################
+
+RM = /bin/rm -f
+
+CC =  mpicc
+FC =  mpif90
+FL =  mpif90
+
+AR = ar vr
+RANLIB  = echo
+
+#DOUBLE VERSUS SINGLE PRECISION LU FACTORIZATION:
+#   -D_sp                   (single precision) 
+#   -D_dp                   (double precision) 
+
+OPT_PRE = -cpp -D_$(EXT)
+
+#OPTIONS COMPILE
+OPTF =  -O3 -assume byterecl $(OPT_PRE)
+OPTC =  -O3  $(OPT_PRE)
+OPTL =  -O3 -assume byterecl $(OPT_PRE)
+#OPTF =  -O3  
+#OPTC =  -O3  
+#OPTL =  -O3 
+#OPTF = -assume byterecl -check all -debug -g -O0 -fp-stack-check -traceback -ftrapuv -implicitnone -warn truncated_source -warn argument_checking \
+#-warn declarations -warn alignments -warn ignore_loc -warn usage -mcmodel=medium -shared-intel $(OPT_PRE)
+#OPTC = -I/usr/openwin/include  -debug all -CB -traceback
+#OPTL = -assume byterecl -check all -debug -g -O0 -fp-stack-check -traceback -ftrapuv -implicitnone -warn truncated_source -warn argument_checking \
+#-warn declarations -warn alignments -warn ignore_loc -warn usage -mcmodel=medium -shared-intel $(OPT_PRE)
+OPTFF = ${OPTF}
+
+#Begin orderings
+
+SCOTCHDIR  =  $(LADIR)/SCOTCH
+ISCOTCH    = -I$(SCOTCHDIR)/include 
+LSCOTCH    = -L$(SCOTCHDIR)/lib -lptesmumps -lptscotch -lptscotcherr
+
+
+LPORDDIR = $(LADIR)/MUMPS/PORD/lib/
+IPORD    = -I$(LADIR)/MUMPS/PORD/include/
+LPORD    = -L$(LPORDDIR) -lpord
+
+LMETISDIR = $(LADIR)/PARMETIS/
+#IMETIS    = # Metis doesn't need include files (Fortran interface avail.)
+#LMETIS    = -L$(LMETISDIR) -lmetis
+LMETIS    = -L$(LMETISDIR) -lparmetis -lmetis
+
+# The following variables will be used in the compilation process.
+# Please note that -Dptscotch and -Dparmetis imply -Dscotch and -Dmetis respectively.
+ORDERINGSF = -Dscotch -Dmetis -Dpord -Dptscotch -Dparmetis
+#ORDERINGSF  = -Dmetis -Dpord -Dparmetis
+ORDERINGSC  = $(ORDERINGSF)
+
+LORDERINGS = $(LMETIS) $(LPORD) $(LSCOTCH)
+IORDERINGSF = $(ISCOTCH)
+IORDERINGSC = $(IMETIS) $(IPORD) $(ISCOTCH)
+
+#End orderings
+
+#
+
+LMUMPS = -L$(LADIR)/MUMPS/lib -lcmumps -lmumps_common
+
+#
+
+########################################################################
+INCPAR = -I$(LADIR)/MUMPS/include -I ../include -I $(OPTIM)/COMMON/include
+##############################################################################
+#
+# MKL LIBRARY ... 
+#
+#############################################################################
+
+LMKL=-L $(LIBRARY_PATH) -lmkl_intel$(IA) -lmkl_intel_thread -lmkl_core -lmkl_blas95$(IA) -lmkl_scalapack$(IA) -lmkl_blacs_openmpi$(IA) -lmkl_lapack95$(IA) -lifcore -lm -openmp -lpthread
+
+LOPTIM=-L $(OPTIM)/lib -lSEISCOPE_OPTIM
+
+LIBPAR=$(LMUMPS) $(LPORD) $(LMETIS) $(LSCOTCH) $(LMKL) $(LOPTIM) 
+
+#Parallel:
+INC = $(INCPAR)
+LIB = $(LIBPAR)
+
+## FOR LIBRARIES BUILD-UP
+INCL = -I $(LADIR)/MUMPS/include -I ../include -I $(OPTIM)/COMMON/include

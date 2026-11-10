@@ -1,0 +1,70 @@
+Copyright 2008-2011 SEISCOPE project, All rights reserved.
+Copyright 2013-2021 SEISCOPEII project, All rights reserved.
+
+Redistribution and use in source and binary forms, with or
+without modification, are permitted provided that the following
+conditions are met:
+
+    *  Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+    *  Redistributions in binary form must reproduce the above
+       copyright notice, this list of conditions and the following
+       disclaimer in the documentation and/or other materials provided
+       with the distribution.
+    *  Neither the name of the SEISCOPE project nor the names of
+       its contributors may be used to endorse or promote products
+       derived from this software without specific prior written permission.
+
+Warranty Disclaimer:
+THIS SOFTWARE IS PROVIDED BY THE SEISCOPE PROJECT AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+SEISCOPE PROJECT OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+Acknowledgements:
+TOY2DAC and other SEISCOPE project's codes have been developed 
+in the framework of SEISCOPE and SEISCOPE 2 consortia, and we thank
+the sponsors of these projects 
+SEISCOPE : BP, CGG-VERITAS, ENI, EXXON-MOBIL, PETROBRAS, SAUDI ARAMCO, 
+SHELL, STATOIL and TOTAL; 
+SEISCOPE2 : BP, CGG, CHEVRON, EXXON-MOBIL, JGI, PETROBRAS, SAUDI ARAMCO, 
+SCHLUMBERGER, SHELL, SINOPEC, STATOIL, TOTAL and WOODSIDE
+TOY2DAC have also been partialy funded by the French research agency 
+(Agence Nationale de la Recherche) by project ANR-05-NT05-2-42427
+ and is supported by Univ. Joseph Fourier Grenoble and CNRS.
+
+References:
+The use of TOY2DAC should be associated to the appropriate references in 
+publications
+#forward modeling in isotropic media
+Hustedt, B., Operto, S., and Virieux, J. (2004).
+Mixed-grid and staggered-grid finite difference methods for frequency
+domain acoustic wave modelling. Geophysical Journal International, 157:1269--1296.
+
+#forward modeling in TTI media
+Operto, S., Virieux, J., Ribodetti, A., and Anderson, J.E. (2009).
+Finite-difference frequency-domain modeling of visco-acoustic wave 
+propagation in two-dimensional TTI media. Geophysics, 74 (5):T75--T95.
+
+#truncated-Newton 
+Metivier, L., Bretaudeau, F., Brossier, R., Operto, S., and Virieux, J. (2014).
+Full waveform inversion and the truncated Newton method: quantitative imaging 
+of complex subsurface structures. Geophysical Prospecting, 62:1353--1375.
+
+Metivier, L., Brossier, R., Virieux, J., and Operto, S. (2013).
+Full Waveform Inversion and the truncated Newton method.
+SIAM Journal On Scientific Computing, 35(2):B401--B437.
+
+#optimization tool-box
+Metivier, L. and Brossier, R. (2016).
+The seiscope optimization toolbox: A large-scale nonlinear
+optimization library based on reverse communication. Geophysics, 81(2), F11--F25
+

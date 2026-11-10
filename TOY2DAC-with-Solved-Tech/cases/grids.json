@@ -1,0 +1,5 @@
+{
+  "marmousi3d-h85": {"spacing_m": 85, "frequency_hz": 5, "element_grid_xyz": [99, 14, 35], "n": 162000, "nnz": 1981272, "nrhs": 1},
+  "marmousi3d-h75": {"spacing_m": 75, "frequency_hz": 5, "element_grid_xyz": [112, 16, 40], "n": 236283, "nnz": 2963553, "nrhs": 1},
+  "marmousi3d-h65": {"spacing_m": 65, "frequency_hz": 5, "element_grid_xyz": [129, 18, 46], "n": 348270, "nnz": 4460910, "nrhs": 1}
+}

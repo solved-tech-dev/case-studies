@@ -1,0 +1,8 @@
+141 681     ! nz,nx
+25.         ! h
+vp_Marmousi_init qp rho epsilon_m delta_m theta_m  ! files name
+90. 10.     ! pml coef & npml
+0           ! Hicks interpolation (1 YES, 0 NO)
+0           ! Free surface (1 YES, 0 NO)
+1 0                                        ! type of source (0-> pressure or 1-> vertical force) and type of receiver (0/1(not yet implemented))
+0.                                         ! laplace constant

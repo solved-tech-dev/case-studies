@@ -1,0 +1,67 @@
+#
+#    PARALLEL    INTEL
+##################################################################
+
+#EXTENTION OF THE BINARY
+EXT=
+
+#COMPILER NAMES
+CC=gcc
+FC=ifort
+FL=ifort
+
+#PREPOCESSING COMMANDES :
+OPT_PRE = -cpp 
+
+#OPTIONS COMPILE
+#DEBUG
+OPTF =  -C -g -warn  -DEBUG -check -assume byterecl -check all -gen_interfaces -traceback   $(OPT_PRE) -assume byterecl  
+OPTC =  -C -g -Wall $(OPT_PRE)
+OPTL =  -C -g -warn  -DEBUG -check -assume byterecl -check all -gen_interfaces -traceback   $(OPT_PRE) -assume byterecl 
+#OPTIMIZED
+#OPTF =  -O3  -assume byterecl $(OPT_PRE)    
+#OPTC =  -O3  $(OPT_PRE)    
+#OPTL =  -O3  -assume byterecl 
+
+OPTFF = ${OPTF}
+
+#Library variables
+AR= ar
+ARFUNCT= cruv
+AREXTRA= xo
+RANLIB= ranlib
+
+#ROOT DIR OF MUMPS/METIS
+LADIR  = /home/romain/CODES/LinAlg_MKL/
+
+#ROOT DIR OF TOOL BOX
+LTOOLS_BOX = /home/romain/CODES/TOOLS_BOX/trunk
+
+#MKL LIBRARIES
+LMKL= -L ${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lmkl_blas95_lp64 -lmkl_lapack95_lp64 -lm -openmp -lpthread  
+
+#MUMPS LIB AND INC (with fake MPI)
+LMUMPS = -L$(LADIR)/MUMPS_4.10.0_seq/lib -lcmumps -lmumps_common -L$(LADIR)/MUMPS_4.10.0_seq/libseq -lmpiseq
+IMUMPS = -I$(LADIR)/MUMPS_4.10.0_seq/include -I$(LADIR)/MUMPS_4.10.0_seq/libseq
+
+#PORD LIB (INSIDE MUMPS)
+LPORDDIR = $(LADIR)/MUMPS_4.10.0_seq/PORD/lib/
+LPORD    = -L$(LPORDDIR) -lpord
+
+#METIS LIB
+LMETISDIR = $(LADIR)/METIS/
+LMETIS    = -L$(LMETISDIR) -lmetis
+
+#TOOL BOX LIB AND INC
+LOPTIM = -L $(LTOOLS_BOX)/OPTIMIZATION/lib -lSEISCOPE_OPTIM
+IOPTIM  = -I $(LTOOLS_BOX)/OPTIMIZATION/COMMON/include
+
+#WE GATHER EVERYTHINGS
+LIBPAR = $(LMUMPS) $(LPORD) $(LOPTIM)  $(LMETIS)  $(LMKL) 
+INCPAR = $(IMUMPS) $(IPORD) $(IOPTIM) -I../include  
+
+INC = $(INCPAR)
+LIB = $(LIBPAR)
+
+
+

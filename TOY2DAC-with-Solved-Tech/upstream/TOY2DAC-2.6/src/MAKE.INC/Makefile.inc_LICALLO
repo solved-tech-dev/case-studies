@@ -1,0 +1,149 @@
+#
+#   version      11 INTEL  FOR LICALLO
+#
+###########################################
+###########################################
+#   SETUP WHERE IS THE linear algebra procedures
+###########################################
+########################################### <<<<<<  SPECIFY
+MUMPS_ROOT=/softs/mumps-4.10.0-scotch6-intel15-impi5/
+
+###########################################
+#  OPTIMIZATION TOOLBOX
+###########################################
+# Assuming we are on a pseud complete distribution
+OPTIM = /gpfs/scratch/operto/CODES/TOOLS_BOX/trunk/OPTIMIZATION
+
+########################################### <<<<<< YOUR OWN DIR
+###########################################
+#   SETUP THE ARCHITECTURE 
+###########################################
+###########################################
+# structure 32 bits    nothing to do
+#IA=
+# structure LP64    with 32 bits integer
+# the most used environment openmpi is set for that
+IA=_lp64
+# structure ILP64    with 64 bits integer
+# require specific openmpi
+#IA=_ilp64
+###########################################
+
+###########################################
+#   SET SINGLE PRECISION(sp) VERSUS DOUBLE PRECISION(dp) CODE
+###########################################
+
+EXT=
+
+RM = /bin/rm -f
+
+CC =  icc
+FC =  ifort
+FL =  ifort 
+
+AR = ar vr
+RANLIB  = echo
+
+#DOUBLE VERSUS SINGLE PRECISION LU FACTORIZATION:
+#   -D_sp                   (single precision) 
+#   -D_dp                   (double precision) 
+
+OPT_PRE = -cpp -D_$(EXT)
+
+#OPTIONS COMPILE
+#OPTF =  -C -m64 $(OPT_PRE) -assume byterecl -DEBUG -check -assume byterecl -check all -gen_interfaces -traceback
+#OPTC =  -C -g  $(OPT_PRE)
+#OPTL =  -C -g -assume byterecl -DEBUG -check -assume byterecl -check all -gen_interfaces -traceback
+OPTF =  -O3  $(OPT_PRE) -assume byterecl  
+OPTC =  -O3 $(OPT_PRE)
+OPTL =  -O3 -assume byterecl    
+OPTFF = ${OPTF}
+
+###########################################
+#   SETUP THE MUMPS LINK
+###########################################
+
+LMUMPS = -L$(MUMPS_ROOT)/lib -lcmumps -lzmumps -lmumps_common    ## SPL version
+#LMUMPS = -L$(MUMPS_ROOT)/lib -lzmumps -lmumps_common    ## DBP version
+
+###########################################################################################################
+#          Metis/ParMetis and SCOTCH/PT-SCOTCH (ver 5.1 and later) orderings are now available for MUMPS.
+###########################################################################################################
+# Useless, staticaly linked through MUMPS
+SCOTCHDIR  =  /softs/scotch-6.0.3-intel15-impi5/
+ISCOTCH    = -I$(SCOTCHDIR)/include 
+
+# You have to choose one among the following two lines depending on
+# the type of analysis you want to perform. If you want to perform only
+# sequential analysis choose the first (remember to add -Dscotch in the ORDERINGSF
+# variable below); for both parallel and sequential analysis choose the second 
+# line (remember to add -Dptscotch in the ORDERINGSF variable below)
+
+#LSCOTCH    = -L$(SCOTCHDIR)/lib -lesmumps -lscotch -lscotcherr
+LSCOTCH    = -L$(SCOTCHDIR)/lib -lptesmumps -lptscotch -lscotch -lptscotcherr
+
+#LPORDDIR = $(MUMPS_ROOT)/PORD/lib/
+#IPORD    = -I$(MUMPS_ROOT)/PORD/include/
+#LPORD    = -L$(LPORDDIR) -lpord
+
+#IMETIS    = # Metis doesn't need include files (Fortran interface avail.)
+#METISDIR  = /softs/metis-4.0.3-intel
+#METISDIR  = $(LADIR)/METIS
+#LMETISDIR = $(METISDIR)
+#IMETIS    = -I$(METISDIR)/include 
+
+# You have to choose one among the following two lines depending on
+# the type of analysis you want to perform. If you want to perform only
+# sequential analysis choose the first (remember to add -Dmetis in the ORDERINGSF
+# variable below); for both parallel and sequential analysis choose the second 
+# line (remember to add -Dparmetis in the ORDERINGSF variable below)
+
+# PS, check that mumps is compiled with the same version than in this Makefile.inc (parallel vs sequential)
+# , knowing mumps can be compiled with metis parallel since version 492
+#LMETIS    = -L$(LMETISDIR) -lparmetis -lmetis   ## pour METIS parallèle
+#LMETIS    = -L$(LMETISDIR) -lmetis              ## pour METIS séquentiel 
+
+# The following variables will be used in the compilation process.
+# Please note that -Dptscotch and -Dparmetis imply -Dscotch and -Dmetis respectively.
+ORDERINGSF = -Dscotch -Dptscotch 
+#ORDERINGSF  = -Dmetis -Dpord -Dparmetis
+#ORDERINGSF  = -Dpord -Dparmetis         ## pour METIS parallèle
+#ORDERINGSF  = -Dpord -Dmetis   ## pour METIS séquentiel
+#ORDERINGSC  = $(ORDERINGSF)
+
+LORDERINGS = $(LSCOTCH) 
+IORDERINGSF = $(ISCOTCH)
+#IORDERINGSC = $(IMETIS) $(IPORD) 
+
+#End orderings
+
+##########################################
+#
+#   SETUP the PARALLEL ENVIRONMENT
+#
+##########################################
+
+INCPAR = 
+
+MPI_COMP := $(shell mpiifort -mt_mpi -show | sed -e 's/.*\-I/-I/g' -e 's/include.*/include/g') 
+INCPAR = $(MPI_COMP) -I$(MUMPS_ROOT)/include -I../include -I $(OPTIM)/COMMON/include
+
+
+#############################################################################
+
+LOPTIM=-L $(OPTIM)/lib -lSEISCOPE_OPTIM
+
+
+MPI_LNK := $(shell mpiifort -mt_mpi -show | sed -e 's/ifort//' |sed -e 's/\-I.*include//g')
+
+# Suis alloir là: https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
+LMKL :=  -openmp $(MKLROOT)/lib/intel64/libmkl_blas95_lp64.a $(MKLROOT)/lib/intel64/libmkl_lapack95_lp64.a $(MKLROOT)/lib/intel64/libmkl_scalapack_lp64.a -Wl,--start-group $(MKLROOT)/lib/intel64/libmkl_intel_lp64.a $(MKLROOT)/lib/intel64/libmkl_core.a $(MKLROOT)/lib/intel64/libmkl_intel_thread.a -Wl,--end-group $(MKLROOT)/lib/intel64/libmkl_blacs_intelmpi_lp64.a -lpthread -lm
+
+LIBPAR = $(LMUMPS) $(LSCOTCH) $(LMKL) $(MPI_LNK) $(LOPTIM)
+
+#Preprocessor defs for calling Fortran from C (-DAdd_ or -DAdd__ or -DUPPER)
+CDEFS   = -DAdd_
+
+INC = $(INCPAR)
+LIB = $(LIBPAR)
+LIBSEQNEEDED =

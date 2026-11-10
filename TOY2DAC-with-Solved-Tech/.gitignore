@@ -1,0 +1,11 @@
+/_work/
+__pycache__/
+*.pyc
+*.o
+*.mod
+*.so
+*.so.*
+*.key
+*.license
+/sdk/
+/private/

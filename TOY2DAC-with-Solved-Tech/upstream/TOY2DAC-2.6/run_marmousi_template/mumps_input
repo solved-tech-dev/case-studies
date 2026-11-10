@@ -1,0 +1,4 @@
+7    ! icntl 7
+200   ! icntl 14
+1000 ! icntl 23
+8    ! keep 84

@@ -1,0 +1,56 @@
+!*********************************************************************
+!                          TOY2DAC code                              !
+!    a user friendly 2D acoustic Full Waveform Inversion package     !
+!--------------------------------------------------------------------!
+!This package have been developed for testing methodological concepts!
+!of FWI in the framework of 2D acoustic approximation, in the        !
+!frequency-domain. This package is developped basicaly in sequential !
+!(with openMP threads) in order to keep things simple for quick tests!
+!and developements... only the LU decomposition done by MUMPS is done!
+!with MPI directives                                                 !
+!--------------------------------------------------------------------!
+!                    DEVELOPMENT HISTORY                             !
+! V2.6  - 05/2019  - R. Brossier   & L. Metivier                     !
+! correct bug                                                        !
+!                                                                    !
+! V2.5  - 07/2018  - R. Brossier                                     !
+! few bugs + patch the code for compatibilty with gfortran           !
+!                                                                    !
+! V2.4  - 08/2016  - R. Brossier                                     !
+! *correction of several bugs associated to erroneous allocations of !
+! table and other problems feedbacked from users		     !
+! *merge back the branche developed for the Nankai application of    !
+! Andrew including now : complex frequencies, vertical source        !
+! weight function... 						     !
+! *correct the documentation from errors		             !
+! *implement the choice of single or double precision for MUMPS      !
+! usefull for complex frequencies                                    !
+!                                                                    !
+! V2.3  - 05/2015  - R. Brossier - L. Metivier                       !
+! correct few bugs                                                   !
+!                                                                    !
+! V2.2  - 10/2014  - R. Brossier - L. Metivier                       !
+! few bugs associated to anisotropic inversion should be fixed       !
+!                                                                    !
+! V2.1  - 08/2014  - R. Brossier - L. Metivier                       !
+! Reintegration of the V2 in the trunk as reference version          !
+!                                                                    !
+! V2.0  - 09/2013  - R. Brossier - L. Metivier                       !
+!Development in a branche, in parallel of the simple V1.0 version    !
+!This new version is connected to the SEISCOPE OPTIMIZATION TOOLBOX  !
+!and implements second-order adjoint state formulas for the          !
+!computation of Hessian-vector products. The use of the different    ! 
+!optimization schemes proposed in the TOOLBOX is thus possible       !
+!Three additional functionalities have aslo been implemented in this !
+! version                                                            !
+! - free surface condition                                           !
+! - acoustic anisotropic modeling                                    !
+! - Hicks interpolation for sources and receivers                    !
+!                                                                    !
+! V1.0  - 09/2011  - R. Brossier                                     !
+!        version based on FWT2D V5.4 code of S. Operto for the       !
+!        forward problem.                                            !
+!        inversion based on LBFGSB routine of Nocedal                !
+!--------------------------------------------------------------------!
+!********************************************************************!
+
