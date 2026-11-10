@@ -2,9 +2,9 @@
 
 [English](BUILD-AND-RUN.md) · [简体中文](BUILD-AND-RUN.zh-CN.md)
 
-Use a Linux x86-64 system with GCC, G++ with C++17 support, Python 3.9 or later, a compatible NVIDIA GPU driver, CUDA 12.9 development files and the PanguLU 26.46 SDK. The 3D application uses a single process. Obtain the SDK and a license for your GPU from [Solved Tech](https://solved-tech.com/).
+Use Linux x86-64, GCC, G++ with C++17 and OpenMP, Python 3.9 or newer, a compatible NVIDIA driver, CUDA 12.9 development files, and the PanguLU 26.46 SDK. The application runs in one process on one GPU. Obtain the SDK and GPU license from [Solved Tech](https://solved-tech.com/).
 
-Run from the project root with your installation paths. Install the license following the SDK instructions. The default license location used for the benchmark was `~/.pangulu/license.key`.
+Set the installation paths from the project directory and configure the license as described by the SDK.
 
 ```bash
 export PANGULU_ROOT=/path/to/pangulu-26.46
@@ -17,17 +17,15 @@ for h in 85 75 65; do
 done
 ```
 
-The default build directory is `_work/build`. To use another directory, pass `--output` to the builder and `--build` to the runner. For a split CUDA installation, pass `--cuda` with the runtime development root and `--cuda-nvcc-include` with the additional header directory. Make the CUDA libraries required by the SDK available on `LD_LIBRARY_PATH` at build and run time. The builder records its loader check in `loader-marmousi3d_pangulu.txt`. On a cluster, run the application inside a GPU allocation.
+The default build directory is `_work/build`. To change it, pass `--output` when building and `--build` when running. For split CUDA installations, pass the runtime development directory to `--cuda` and the additional header directory to `--cuda-nvcc-include`. The builder writes a dynamic-library check for each grid. On a cluster, run inside a GPU allocation and supply the required SDK runtime libraries through `LD_LIBRARY_PATH`.
 
-Use a new output directory for each run. To stage the input model and case metadata without a build or GPU, add `--prepare-only`.
+Use a new output directory for each run. The runner generates observations at 3 and 5 Hz using the truth model and then inverts from the smoothed starting model. Use `--prepare-only` to copy the case configuration and input without running the solver.
 
-| Output | Contents |
+| File | Contents |
 | --- | --- |
-| `case.json`, `metadata.txt` | Case parameters, grid dimensions and application residual |
-| `model.vtk` | 3D P-wave and S-wave speeds in m/s |
-| `field.vtk` | Real and imaginary displacement vectors and their combined magnitude |
-| `field_complex.bin` | Full displacement field. Three little-endian 32-bit node counts precede six float64 values per node, ordered Re/Im for x, y and z. The x index varies fastest. |
-| `midplane_y.csv` | Velocity and complex displacement on the middle crossline plane |
-| `stdout.log`, `stderr.log`, `validation.json` | Application and solver logs, residual, field checks and native stage timings |
+| `case.json` | Grid, frequencies, matrix order, and COO storage count |
+| `observations/vp-true.bin`, `observations/vp-initial.bin`, `vp-final.bin` | True, initial, and recovered P-wave velocity in m/s. Headerless little-endian float64 node values with x varying fastest. |
+| `observations/data-{0,1}.bin`, `predicted-{0,1}.bin` | Three-component receiver displacement at 3 and 5 Hz, stored receiver by receiver. Each component contains its real and imaginary parts as little-endian float64 values. |
+| `generate.*.log`, `invert.*.log`, `validation.json` | Generation and inversion logs, validation, iteration history, and native phase timings |
 
-The runner checks the expected matrix order and COO entry count, a finite original-system relative residual at most `1e-8`, and the dimensions, size and finite values of the full binary displacement field. Core solver time sums native analysis, numeric factorization and solve. It excludes model generation, assembly, explicit transfers, output and validation. For a failed run, the original phase and status are available in the logs.
+The runner checks every original COO residual (finite and ≤ 1e-8), the forward receiver traces, a finite-difference gradient check, 12 velocity updates, and the waveform and velocity errors. Core time sums native analysis, factorization, and solve during optimization. Observation generation, gradient and forward checks, and application wall time are tracked separately.

@@ -1,9 +1,9 @@
-# Integration entry points
+# PanguLU integration
 
 [English](INTEGRATION.md) · [简体中文](INTEGRATION.zh-CN.md)
 
-- [apps/marmousi3d/frequency_elastic.c](../apps/marmousi3d/frequency_elastic.c) reads the upstream velocity profile, builds the 3D model, assembles the complex COO matrix and point-force right-hand side, and writes the displacement field.
-- [adapter/pangulu_adapter.h](../adapter/pangulu_adapter.h) defines the C interface. The application passes the original matrix to `case_factor`, sends one complex right-hand side to `case_solve`, and releases solver state with `case_cleanup`.
-- [adapter/pangulu_adapter.cpp](../adapter/pangulu_adapter.cpp) converts zero-based COO to CSC with sorted row indices, retaining all stored entries. It creates a complex FP64 general LU system with L0 ordering and L1 reuse, calls the native analysis and factorization phases, then solves one column using `pangulu_multiple_vector_create`. The solved real and imaginary components return to the application for the original COO residual calculation and output.
+- [apps/marmousi3d/model.c](../apps/marmousi3d/model.c) generates the 3D truth model from the upstream velocity profile and assembles a complex COO matrix from the current velocity.
+- [apps/marmousi3d/fwi.cpp](../apps/marmousi3d/fwi.cpp) generates synthetic observations, computes forward and conjugate-transpose adjoint wavefields, and updates P-wave velocity with L-BFGS and a line search. Both systems use `case_factor()`, `case_solve_many()`, and `case_cleanup()`.
+- [adapter/pangulu_fwi_adapter.cpp](../adapter/pangulu_fwi_adapter.cpp) converts zero-based COO to CSC sorted by row within each column and preserves every stored entry. It configures L0 ordering and double-precision complex general LU, then calls `pangulu_execute()` for native analysis, factorization, and solve. It uses `pangulu_multiple_vector_create()` to describe one GPU right-hand-side column and one solution column, and returns the solution to the application.
 
-The adapter owns the GPU vectors and the PanguLU handles. The forward application owns the model, assembled matrix, source and output. [Case parameters](../cases/grids.json) supply the spacing, element counts, frequency and expected matrix sizes for each run.
+Each system creates and releases its own solver state, so native analysis and factorization run for every system. The application checks each returned wavefield against the original COO system. [Case definitions](../cases/fwi-grids.json) specify the grids, frequencies, and matrix sizes.

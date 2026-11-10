@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Copyright 2026 Solved Tech
-#include "pangulu_adapter.h"
+#include "pangulu_fwi_adapter.hpp"
 #include <pangulu.h>
 #include <cuda_runtime_api.h>
 #include <algorithm>
@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-using Complex = std::complex<double>;
+using Complex = SolverComplex;
 static_assert(sizeof(Complex) == 16 && sizeof(int) == 4);
 
 namespace {
@@ -52,6 +52,13 @@ void factor(int n, int64_t nnz, const int *rows, const int *cols, const double *
     if (n <= 0 || nnz <= 0) throw std::runtime_error("invalid matrix size");
     check(case_cleanup(), "release previous factors");
     auto &s = system_state;
+    static bool reported_device = false;
+    if (!reported_device) {
+        cudaDeviceProp properties{};
+        check(cudaGetDeviceProperties(&properties, 0), "query GPU");
+        std::printf("PANGULU_DEVICE name=%s\n", properties.name);
+        reported_device = true;
+    }
     s.n = n;
     s.pointers.assign(static_cast<size_t>(n) + 1, 0);
     s.rows.resize(nnz);
@@ -105,9 +112,10 @@ struct Vectors {
     }
 };
 
-std::vector<Complex> solve(int n, const Complex *rhs) {
+void solve(const Complex *rhs, Complex *solution) {
     const auto &s = system_state;
-    if (n != s.n || !s.handle || !s.matrix) throw std::runtime_error("solve requires matching factors");
+    const int n = s.n;
+    if (!s.handle || !s.matrix) throw std::runtime_error("solve requires matching factors");
     const size_t bytes = static_cast<size_t>(n) * sizeof(Complex);
     Vectors device;
     check(cudaMalloc(reinterpret_cast<void **>(&device.db), bytes), "allocate RHS");
@@ -119,9 +127,7 @@ std::vector<Complex> solve(int n, const Complex *rhs) {
                                          PANGULU_MEMORY_DEVICE), "create solution vector");
     check(cudaMemcpy(device.db, rhs, bytes, cudaMemcpyHostToDevice), "upload RHS");
     phase(PANGULU_PHASE_SOLVE, "solve", device.x, device.b);
-    std::vector<Complex> x(n);
-    check(cudaMemcpy(x.data(), device.dx, bytes, cudaMemcpyDeviceToHost), "download solution");
-    return x;
+    check(cudaMemcpy(solution, device.dx, bytes, cudaMemcpyDeviceToHost), "download solution");
 }
 
 }  // namespace
@@ -142,15 +148,9 @@ extern "C" int case_factor(int n, int64_t nnz, const int *rows, const int *cols,
     } catch (const std::exception &error) { return report("factor", error); }
 }
 
-extern "C" int case_solve(int n, const double *br, const double *bi, double *xr, double *xi) {
+extern "C" int case_solve_many(const SolverComplex *rhs, SolverComplex *solution) {
     try {
-        std::vector<Complex> rhs(n);
-        for (int i = 0; i < n; ++i) rhs[i] = Complex(br[i], bi[i]);
-        const auto x = solve(n, rhs.data());
-        for (int i = 0; i < n; ++i) {
-            xr[i] = x[i].real();
-            xi[i] = x[i].imag();
-        }
+        solve(rhs, solution);
         return 0;
     } catch (const std::exception &error) { return report("solve", error); }
 }

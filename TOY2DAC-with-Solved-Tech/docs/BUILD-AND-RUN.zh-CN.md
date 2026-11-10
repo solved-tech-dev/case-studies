@@ -2,9 +2,9 @@
 
 [English](BUILD-AND-RUN.md) · [简体中文](BUILD-AND-RUN.zh-CN.md)
 
-使用 Linux x86-64、GCC、支持 C++17 的 G++、Python 3.9 或更新版本、兼容的 NVIDIA GPU 驱动、CUDA 12.9 开发文件和 PanguLU 26.46 SDK。三维程序以单进程运行。SDK 和适用于目标 GPU 的许可证可向[解得科技](https://solved-tech.com/)获取。
+使用 Linux x86-64、GCC、支持 C++17 和 OpenMP 的 G++、Python 3.9 或更新版本、兼容的 NVIDIA GPU 驱动、CUDA 12.9 开发文件和 PanguLU 26.46 SDK。程序在单进程、单 GPU 上运行。SDK 和 GPU 许可证可向[解得科技](https://solved-tech.com/)获取。
 
-在项目根目录运行下面的命令，并替换为实际安装路径。按 SDK 的说明配置许可证。本次性能测试使用的默认授权文件位置为 `~/.pangulu/license.key`。
+在项目目录设置实际安装路径，按 SDK 说明配置许可证，再执行以下命令。
 
 ```bash
 export PANGULU_ROOT=/path/to/pangulu-26.46
@@ -17,17 +17,15 @@ for h in 85 75 65; do
 done
 ```
 
-默认构建目录是 `_work/build`。如需改用其他目录，构建时传 `--output`，运行时传 `--build`。若 CUDA 开发文件分开安装，`--cuda` 指向运行库开发目录，`--cuda-nvcc-include` 指向附加头文件目录。构建和运行时，通过 `LD_LIBRARY_PATH` 提供 SDK 所需的 CUDA 运行库。构建器将动态库检查写入 `loader-marmousi3d_pangulu.txt`。在集群上请在已分配的 GPU 作业内运行。
+默认构建目录为 `_work/build`。可通过构建命令的 `--output` 和运行命令的 `--build` 指定其他目录。若 CUDA 开发文件分开安装，`--cuda` 指向运行库开发目录，`--cuda-nvcc-include` 指向附加头文件目录。构建器为各网格写出动态库检查日志。集群用户应在分配到 GPU 的作业内运行，并按 SDK 说明通过 `LD_LIBRARY_PATH` 提供所需运行库。
 
-每次运行使用新的输出目录。加 `--prepare-only` 可单独准备模型数据和案例参数，无需先构建或使用 GPU。
+每次运行使用新的输出目录。运行器从真值模型生成 3 Hz 和 5 Hz 观测，再用平滑初始模型执行反演。使用 `--prepare-only` 可只复制案例配置和原始输入。
 
 | 文件 | 内容 |
 | --- | --- |
-| `case.json`、`metadata.txt` | 案例参数、网格尺寸和应用计算的残差 |
-| `model.vtk` | 三维纵波和横波速度，单位 m/s |
-| `field.vtk` | 位移向量的实部、虚部和合成幅值 |
-| `field_complex.bin` | 完整三维位移。开头为三个小端 32 位节点数，其后每个节点依次写入 x、y、z 三分量的实部和虚部，共六个 float64。x 下标变化最快。 |
-| `midplane_y.csv` | 横向中间剖面上的速度和复位移 |
-| `stdout.log`、`stderr.log`、`validation.json` | 应用与求解器日志、残差、波场检查及原生阶段计时 |
+| `case.json` | 网格、频率、矩阵阶数和存储项数 |
+| `observations/vp-true.bin`、`observations/vp-initial.bin`、`vp-final.bin` | 真值、初始和最终纵波速度。文件为小端 float64 节点值，单位 m/s，x 下标变化最快，无文件头。 |
+| `observations/data-{0,1}.bin`、`predicted-{0,1}.bin` | 3 Hz 和 5 Hz 下接收器的三分量复位移，按接收器排序，每分量依次存储小端 float64 实部和虚部。 |
+| `generate.*.log`、`invert.*.log`、`validation.json` | 生成与反演日志、验证结果、迭代轨迹和原生阶段计时 |
 
-运行入口核对矩阵阶数和 COO 存储项数，检查原始方程的相对残差有限且不超过 `1e-8`，并验证完整二进制位移的尺寸、长度和数值有限性。核心耗时由原生分析、数值分解和求解相加，建模、组装、显式数据传输、输出和校验在核心计时之外。发生求解错误时，可从日志查看出错阶段和状态码。
+运行器核对每个原始 COO 系统的有限相对残差（≤ 1e-8）、正演接收器记录、有限差分梯度检查、12 次速度更新及波形和速度误差。核心耗时累计正式反演中的分析、数值分解和求解。合成观测、梯度检查、额外正演验证和应用墙钟分别记录或统计。
