@@ -1,0 +1,88 @@
+# nBoundaryConditions: Number of global boundary conditions.
+# bcName             : Boundary condition name.
+# bcType(in PHengLEI): Boundary condition type.
+
+# How to set boundary condition, for example: 
+# string bcName = "Wall";                   
+# {                                           
+#   int bcType = 2;                           
+#   int viscousType = 1;                      
+#   double wallTemperature = -1.0;            
+#   double uWall = 0.0;                       
+#   double vWall = 0.0;                       
+#   double wWall = 0.0;                       
+# }                                           
+# string bcName = "Inflow";                 
+# {                                           
+#   int bcType = 5;                           
+#   int inflowParaType = 0;                   
+#   double refMachNumber = 0.73;              
+#   double attackd = 2.79;                    
+#   double angleSlide = 0.0;                  
+#   double refReNumber = 6.5e6;               
+#   double refDimensionalTemperature = 288.15;
+# }                                           
+
+# For more information, see examples/bin/boundary_condition.hypara file!!!
+
+int nBoundaryConditions = 7;
+string bcName = "wall_down";//壁面的边界条件
+{
+  string bodyName = "body";
+  int bcType = 2;
+  double initT = 500.0;
+}
+string bcName = "wall_fb";//边界类型为壁面
+{
+  string bodyName = "body";
+  int bcType = 2;
+  double initT = 500.0;
+}
+string bcName = "wall_in";
+{
+  string bodyName = "body";
+  int bcType = 2;
+  double initT = 500.0;
+}
+string bcName = "wall_up";
+{
+  string bodyName = "body";
+  int bcType = 2;
+  double initT = 500.0;
+}
+string bcName = "inlet_down";
+{
+  int bcType = 5;
+  double initU = 0.05;
+  double initT = 300.0;
+  double initMassFractionIncom[] = [0.0, 0.0, 0.0,  0.97,  0.03,  0.0];
+}
+string bcName = "inlet_up";
+{
+  int bcType = 5;
+  double initU = 0.5;
+  double initT = 600.0;
+  double initMassFractionIncom[] = [0.21, 0.78, 0.009,  0.0,  0.0,  0.001];
+}
+string bcName = "outlet";
+{
+  int bcType = 6;
+  double initP = 0;
+  double initT = 300.0;
+  double initMassFractionIncom[] = [0.1, 0.1, 0.1,  0.1,  0.5,  0.1];
+}
+
+# 'bcType' is defined as following:
+#    -2: WAKE                      
+#    -1: INTERFACE                 
+#    0 : NO_BOUNDARY_CONDITION     
+#    1 : EXTRAPOLATION             
+#    2 : SOLID_SURFACE             
+#    3 : SYMMETRY                  
+#    4 : FARFIELD                  
+#    5 : INFLOW                    
+#    6 : OUTFLOW                   
+#    52: PRESSURE_INLET            
+#    62: PRESSURE_OUTLET           
+#    61: OUTFLOW_CONFINED          
+#    7 : POLE                      
