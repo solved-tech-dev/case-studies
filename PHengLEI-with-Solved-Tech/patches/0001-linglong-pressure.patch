@@ -1,0 +1,759 @@
+diff --git a/CFD/CMakeLists.txt b/CFD/CMakeLists.txt
+index 4f0f782..410d6ab 100644
+--- a/CFD/CMakeLists.txt
++++ b/CFD/CMakeLists.txt
+@@ -63,6 +63,9 @@ if(BUILD_IncomSolver)
+   if(USE_HypreLib)
+     add_definitions(-DUSE_HypreLib)
+   endif()
++  if(USE_LinglongAMG)
++    add_definitions(-DUSE_LinglongAMG)
++  endif()
+   
+   if(USE_UnapLib)
+     add_definitions(-DUSE_UnapLib)
+@@ -206,10 +209,15 @@ include_directories("${MGRID_H_PATH}")
+ 
+ 
+ if(USE_HypreLib)
+-  set(HYPRE_H_PATH ${PROJECT_SOURCE_DIR}/../PHengLEI/3rdparty/hypre/include)
++  if(PHENGLEI_HYPRE_ROOT)
++    set(HYPRE_H_PATH ${PHENGLEI_HYPRE_ROOT}/include)
++  else()
++    set(HYPRE_H_PATH ${PROJECT_SOURCE_DIR}/../PHengLEI/3rdparty/hypre/include)
++  endif()
+   include_directories("${HYPRE_H_PATH}")
+ endif(USE_HypreLib)
+ 
++
+ if(USE_UnapLib)
+   set(UNAP_H_PATH ${PROJECT_SOURCE_DIR}/../PHengLEI/3rdparty/unapLib/include)
+   include_directories("${UNAP_H_PATH}")
+@@ -368,6 +376,7 @@ set(INCOMSOLVER_H_LIST
+ ${INCOMSOLVER_H_PATH}/MomEqCalculator.h
+ ${INCOMSOLVER_H_PATH}/PPEqCalculator.h
+ ${INCOMSOLVER_H_PATH}/IncomCalculator.h
++${INCOMSOLVER_H_PATH}/IncomPhaseTiming.h
+ ${INCOMSOLVER_H_PATH}/IncomScalarEqCalculator.h
+ ${INCOMSOLVER_H_PATH}/IncomEnergyEqCalculator.h
+ ${INCOMSOLVER_H_PATH}/IncomKETurbKEqCalculator.h
+@@ -389,6 +398,7 @@ set(INCOMSOLVER_CPP_LIST
+ ${INCOMSOLVER_CPP_PATH}/MomEqCalculator.cpp
+ ${INCOMSOLVER_CPP_PATH}/PPEqCalculator.cpp
+ ${INCOMSOLVER_CPP_PATH}/IncomCalculator.cpp
++${INCOMSOLVER_CPP_PATH}/IncomPhaseTiming.cpp
+ ${INCOMSOLVER_CPP_PATH}/IncomScalarEqCalculator.cpp
+ ${INCOMSOLVER_CPP_PATH}/IncomEnergyEqCalculator.cpp
+ ${INCOMSOLVER_CPP_PATH}/IncomKETurbEpsilonEqCalculator.cpp
+@@ -402,6 +412,15 @@ ${INCOMSOLVER_CPP_PATH}/yhamgCalculator.cpp
+ ${INCOMSOLVER_CPP_PATH}/LinearEquationSystemCalculator.cpp
+ ${INCOMSOLVER_CPP_PATH}/Param_INCompSolverUnstruct.cpp
+ )
++if(USE_LinglongAMG)
++  list(APPEND INCOMSOLVER_H_LIST ${INCOMSOLVER_H_PATH}/amgBenchmarkLinearSystem.h)
++  list(APPEND INCOMSOLVER_CPP_LIST ${INCOMSOLVER_CPP_PATH}/amgBenchmarkLinearSystem.cpp)
++
++  list(APPEND INCOMSOLVER_H_LIST ${INCOMSOLVER_H_PATH}/linglongPressureAdapter.h
++    ${INCOMSOLVER_H_PATH}/linglongSession.h)
++  list(APPEND INCOMSOLVER_CPP_LIST ${INCOMSOLVER_CPP_PATH}/linglongPressureAdapter.cpp
++    ${INCOMSOLVER_CPP_PATH}/linglongSession.cpp)
++endif()
+ source_group(IncomSolver\\src FILES ${INCOMSOLVER_CPP_LIST})
+ endif(BUILD_IncomSolver)
+ 
+@@ -718,9 +737,35 @@ else(WIN32)
+ endif(WIN32)
+ 
+ if(USE_HypreLib)
+-  list(APPEND LINK_LIBRARY_LIST hypre)
++  if(PHENGLEI_HYPRE_ROOT)
++    find_library(PHENGLEI_HYPRE_LIBRARY HYPRE PATHS "${PHENGLEI_HYPRE_ROOT}/lib" NO_DEFAULT_PATH)
++    if(NOT PHENGLEI_HYPRE_LIBRARY)
++      message(FATAL_ERROR "External HYPRE library not found")
++    endif()
++    list(APPEND LINK_LIBRARY_LIST ${PHENGLEI_HYPRE_LIBRARY} gomp)
++  else()
++    list(APPEND LINK_LIBRARY_LIST hypre)
++  endif()
+ endif(USE_HypreLib)
+ 
++if(USE_LinglongAMG)
++  target_include_directories(${CFD_TARGET_NAME} PRIVATE "${LINGLONGAMG_INCLUDE_DIR}")
++  target_compile_definitions(${CFD_TARGET_NAME} PRIVATE
++    PHENGLEI_LINGLONG_LIBRARY_PATH="${LINGLONGAMG_LIBRARY}")
++  list(APPEND LINK_LIBRARY_LIST CUDA::cudart ${CMAKE_DL_LIBS})
++  if(PHENGLEI_LINGLONG_TESTS)
++    add_executable(linglong_session_test IncomSolver/tests/linglongSessionTest.cpp
++      IncomSolver/src/linglongSession.cpp IncomSolver/src/amgBenchmarkLinearSystem.cpp)
++    target_include_directories(linglong_session_test PRIVATE IncomSolver/include "${LINGLONGAMG_INCLUDE_DIR}")
++    target_compile_definitions(linglong_session_test PRIVATE
++      PHENGLEI_LINGLONG_LIBRARY_PATH="${LINGLONGAMG_LIBRARY}")
++    target_link_libraries(linglong_session_test CUDA::cudart ${CMAKE_DL_LIBS})
++    add_library(linglong_session_audit SHARED IncomSolver/tests/linglongSessionAudit.cpp)
++    target_include_directories(linglong_session_audit PRIVATE "${LINGLONGAMG_INCLUDE_DIR}")
++    target_link_libraries(linglong_session_audit ${CMAKE_DL_LIBS})
++  endif()
++endif()
++
+ if(USE_UnapLib)
+   list(APPEND LINK_LIBRARY_LIST unap utilities)
+ endif(USE_UnapLib)
+diff --git a/CFD/IncomSolver/include/hypreCalculator.h b/CFD/IncomSolver/include/hypreCalculator.h
+index be1edf1..4a27b05 100644
+--- a/CFD/IncomSolver/include/hypreCalculator.h
++++ b/CFD/IncomSolver/include/hypreCalculator.h
+@@ -51,6 +51,7 @@ private:
+     int *rows;
+     RDouble *colValueOfOneRow;
+     int *colNumberOfOneRow;
++    RDouble hypreSetupSolveWallTime;
+ #endif
+ public:
+     // constructor & destructor
+@@ -70,4 +71,3 @@ public:
+ };
+ 
+ }
+-
+diff --git a/CFD/IncomSolver/src/IncomUnstructSolver.cpp b/CFD/IncomSolver/src/IncomUnstructSolver.cpp
+index 8a436ec..2be5af9 100644
+--- a/CFD/IncomSolver/src/IncomUnstructSolver.cpp
++++ b/CFD/IncomSolver/src/IncomUnstructSolver.cpp
+@@ -1,5 +1,8 @@
+ #pragma once
+ #include"IncomUnstructSolver.h"
++#ifdef USE_LinglongAMG
++#include "linglongPressureAdapter.h"
++#endif
+ #include"TK_Time.h"
+ #include"unapCalculator.h"
+ #include"yhamgCalculator.h"
+@@ -16,9 +19,26 @@ IncomUnstructSolver::IncomUnstructSolver()
+     controlParameters = new Param_INCompSolverUnstruct();
+ 
+     int mathLibType = GlobalDataBase::GetIntParaFromDB("mathLibType");
++    const int useLinglong = GlobalDataBase::IsExist("useLinglongPressure", PHINT, 1)
++        ? GlobalDataBase::GetIntParaFromDB("useLinglongPressure") : 0;
++    if (useLinglong != 0 && useLinglong != 1)
++        TK_Exit::ExceptionExit("useLinglongPressure must be 0 or 1");
++    if (useLinglong && mathLibType != HYPRELib)
++        TK_Exit::ExceptionExit("Linglong pressure requires mathLibType=0 for other equations");
+     if (mathLibType == HYPRELib)
+     {
+-        AxEqualbCalculator = new hypreCalculator();
++        if (useLinglong)
++        {
++#ifdef USE_LinglongAMG
++            AxEqualbCalculator = new linglongPressureAdapter();
++#else
++            TK_Exit::ExceptionExit("useLinglongPressure=1 requires USE_LinglongAMG=ON");
++#endif
++        }
++        else
++        {
++            AxEqualbCalculator = new hypreCalculator();
++        }
+     }
+     else if (mathLibType == UNAPLib)
+     {
+@@ -199,7 +219,7 @@ IncomUnstructSolver::IncomUnstructSolver()
+ 
+ IncomUnstructSolver::~IncomUnstructSolver()
+ {
+-
++    delete AxEqualbCalculator;
+ }
+ 
+ void IncomUnstructSolver::DumpResultFile(Grid *grid, int level)
+diff --git a/CFD/IncomSolver/src/PPEqCalculator.cpp b/CFD/IncomSolver/src/PPEqCalculator.cpp
+index d970b52..f66b0d5 100644
+--- a/CFD/IncomSolver/src/PPEqCalculator.cpp
++++ b/CFD/IncomSolver/src/PPEqCalculator.cpp
+@@ -408,6 +408,36 @@ void PPEqCalculator::solvePPEquation(Grid *gridIn)
+ 
+     CorrectPPEb(grid);
+ 
++    // Closed domains have a constant pressure nullspace. An optional reference
++    // makes the linear system nonsingular; legacy HYPRE runs leave it disabled.
++    if (GlobalDataBase::IsExist("incomPressureReferenceCell", PHINT, 1))
++    {
++        const int reference = GlobalDataBase::GetIntParaFromDB("incomPressureReferenceCell");
++        if (reference >= 0)
++        {
++            if (PHMPI::GetNumberOfProcessor() != 1 || PHMPI::GetNumberofGlobalZones() != 1
++                || reference >= grid->GetNTotalCell())
++                TK_Exit::ExceptionExit("incomPressureReferenceCell requires one process, one zone and a valid local cell");
++            UnstructBCSet** boundaries = grid->GetBCRecord();
++            for (int face = 0; face < grid->GetNBoundFace(); ++face)
++                if (boundaries[face]->GetKey() == PHENGLEI::OUTFLOW
++                    || boundaries[face]->GetKey() == PHENGLEI::PRESSURE_OUTLET)
++                    TK_Exit::ExceptionExit("incomPressureReferenceCell is only for a closed pressure system without pressure outlets");
++            // p'[reference]=0: eliminate its row and column. The zero prescribed
++            // value needs no RHS update in neighboring rows and retains symmetry.
++            int* left = grid->GetLeftCellOfFace();
++            int* right = grid->GetRightCellOfFace();
++            for (int face = grid->GetNBoundFace(); face < grid->GetNTotalFace(); ++face)
++                if (left[face] == reference || right[face] == reference)
++                {
++                    upperMatrixCoeff[face] = 0;
++                    lowerMatrixCoeff[face] = 0;
++                }
++            diagMatrixCoeff[reference] = 1;
++            bCoeff[reference] = 0;
++        }
++    }
++
+     calculateLinearEquation(grid, IDX::S_IP, pc, diagMatrixCoeff, bCoeff, upperMatrixCoeff , lowerMatrixCoeff);
+ 
+     CorrectPPEx(grid);
+diff --git a/CFD/IncomSolver/src/hypreCalculator.cpp b/CFD/IncomSolver/src/hypreCalculator.cpp
+index 90537e1..bf077ae 100644
+--- a/CFD/IncomSolver/src/hypreCalculator.cpp
++++ b/CFD/IncomSolver/src/hypreCalculator.cpp
+@@ -2,13 +2,36 @@
+ #include <iomanip>
+ #include "hypreCalculator.h"
+ #include "Geo_UnstructGrid.h"
++#include "IncomPhaseTiming.h"
++#include "TK_Log.h"
+ #include "TK_Time.h"
+ #include "TK_Exit.h"
+ 
+ namespace PHSPACE
+ {
++#if defined(USE_HypreLib) && HYPRE_RELEASE_NUMBER >= 30000
++namespace { int activeHypreCalculators = 0; }
++#endif
++#define INCOM_TIME_CALL(equation, phase, ...) \
++    do \
++    { \
++        IncomPhaseScope phaseTimer(equation, phase); \
++        __VA_ARGS__; \
++    } while (0)
++
+ hypreCalculator::hypreCalculator() : LinearEquationSystemCalculator()
++#ifdef USE_HypreLib
++    , hypreSetupSolveWallTime(0.0)
++#endif
+ {
++#if defined(USE_HypreLib) && HYPRE_RELEASE_NUMBER >= 30000
++    if (activeHypreCalculators++ == 0)
++    {
++        HYPRE_Initialize();
++        HYPRE_SetMemoryLocation(HYPRE_MEMORY_HOST);
++        HYPRE_SetExecutionPolicy(HYPRE_EXEC_HOST);
++    }
++#endif
+ #ifndef USE_HypreLib
+   TK_Exit::ExceptionExit("hypre lib is not opened in CMAKEFile!");
+ #endif
+@@ -17,6 +40,9 @@ hypreCalculator::hypreCalculator() : LinearEquationSystemCalculator()
+ hypreCalculator::~hypreCalculator()
+ {
+     mathLibSolveFinalize();
++#if defined(USE_HypreLib) && HYPRE_RELEASE_NUMBER >= 30000
++    if (--activeHypreCalculators == 0) HYPRE_Finalize();
++#endif
+ }
+ 
+ void hypreCalculator::mathLibSolveInit(Grid *gridIn)
+@@ -397,108 +423,122 @@ void hypreCalculator::mathLibSolve(Grid *gridIn, int iEquation, RDouble *fi, RDo
+     int maxIterStep = maxIterOfEachEq[iEquation];
+     RDouble iterTol = iterTolOfEachEq[iEquation];
+ 
+-    int num_iterations;
+-    RDouble residual;
++    int num_iterations = 0;
++    RDouble residual = 0;
+ 
+-    HYPRE_IJMatrixCreate(MPI_COMM_WORLD, ilower, iupper, ilower, iupper, &A_hypre);
+-    HYPRE_IJMatrixSetObjectType(A_hypre, HYPRE_PARCSR);
+-    HYPRE_IJMatrixInitialize(A_hypre);
+-    
+-    /* Create the rhs and solution */
+-    HYPRE_IJVectorCreate(MPI_COMM_WORLD, ilower, iupper, &b_hypre);
+-    HYPRE_IJVectorSetObjectType(b_hypre, HYPRE_PARCSR);
+-    HYPRE_IJVectorInitialize(b_hypre);
+-    
+-    HYPRE_IJVectorCreate(MPI_COMM_WORLD, ilower, iupper, &x_hypre);
+-    HYPRE_IJVectorSetObjectType(x_hypre, HYPRE_PARCSR);
+-    HYPRE_IJVectorInitialize(x_hypre);
+-    
+-    
+-    ValuesVector = new vector<double>[localSize];
+-    for (int iCell = 0; iCell < localSize; iCell++)
+     {
+-        ValuesVector[iCell].push_back(diagCoef[iCell]);
++        IncomPhaseScope phaseTimer(iEquation, INCOM_BACKEND_CREATE);
++        HYPRE_IJMatrixCreate(MPI_COMM_WORLD, ilower, iupper, ilower, iupper, &A_hypre);
++        HYPRE_IJMatrixSetObjectType(A_hypre, HYPRE_PARCSR);
++        HYPRE_IJMatrixInitialize(A_hypre);
++
++        HYPRE_IJVectorCreate(MPI_COMM_WORLD, ilower, iupper, &b_hypre);
++        HYPRE_IJVectorSetObjectType(b_hypre, HYPRE_PARCSR);
++        HYPRE_IJVectorInitialize(b_hypre);
++
++        HYPRE_IJVectorCreate(MPI_COMM_WORLD, ilower, iupper, &x_hypre);
++        HYPRE_IJVectorSetObjectType(x_hypre, HYPRE_PARCSR);
++        HYPRE_IJVectorInitialize(x_hypre);
+     }
+-    for (int iFace = 0; iFace < nTotalFace; iFace++)
++
+     {
+-        int le = leftCellOfFace[iFace];
+-        int re = rightCellOfFace[iFace];
+-        if (re < localSize)
++        IncomPhaseScope phaseTimer(iEquation, INCOM_BACKEND_PACK);
++        ValuesVector = new vector<double>[localSize];
++        for (int iCell = 0; iCell < localSize; iCell++)
+         {
+-            ValuesVector[le].push_back(upNeighCoef[iFace]);
+-            ValuesVector[re].push_back(dnNeighCoef[iFace]);
++            ValuesVector[iCell].push_back(diagCoef[iCell]);
+         }
+-        else
++        for (int iFace = 0; iFace < nTotalFace; iFace++)
+         {
+-            int bcType = bcr[iFace]->GetKey();
+-            if (bcType != PHENGLEI::INTERFACE)
++            int le = leftCellOfFace[iFace];
++            int re = rightCellOfFace[iFace];
++            if (re < localSize)
+             {
+-                continue;
++                ValuesVector[le].push_back(upNeighCoef[iFace]);
++                ValuesVector[re].push_back(dnNeighCoef[iFace]);
+             }
+-            if (localCell2GlobalMap[re] < GlobalTotalCells)
++            else
+             {
+-                if (localCell2GlobalMap[re] > localCell2GlobalMap[le])
++                int bcType = bcr[iFace]->GetKey();
++                if (bcType != PHENGLEI::INTERFACE)
+                 {
+-                    ValuesVector[le].push_back(upNeighCoef[iFace]);
++                    continue;
+                 }
+-                else if (localCell2GlobalMap[re] < localCell2GlobalMap[le])
++                if (localCell2GlobalMap[re] < GlobalTotalCells)
+                 {
+-                    ValuesVector[le].push_back(upNeighCoef[iFace]);
++                    if (localCell2GlobalMap[re] > localCell2GlobalMap[le])
++                    {
++                        ValuesVector[le].push_back(upNeighCoef[iFace]);
++                    }
++                    else if (localCell2GlobalMap[re] < localCell2GlobalMap[le])
++                    {
++                        ValuesVector[le].push_back(upNeighCoef[iFace]);
++                    }
+                 }
+             }
+-        }    
++        }
+     }
+-    
+-    for (int i = 0; i < localSize; i++)
++
+     {
+-        int colSize = ColVectors[i].size();
+-        int globalRowNumber = rows[i];
+-        for (int jCell = 0; jCell < ColVectors[i].size(); jCell++)
++        IncomPhaseScope phaseTimer(iEquation, INCOM_BACKEND_ASSEMBLE);
++        for (int i = 0; i < localSize; i++)
+         {
+-            colNumberOfOneRow[jCell] = ColVectors[i][jCell];
+-        }
+-    
+-        for (int jCell = 0; jCell < ColVectors[i].size(); jCell++)
+-        {
+-            colValueOfOneRow[jCell] = ValuesVector[i][jCell];
++            int colSize = ColVectors[i].size();
++            int globalRowNumber = rows[i];
++            for (int jCell = 0; jCell < ColVectors[i].size(); jCell++)
++            {
++                colNumberOfOneRow[jCell] = ColVectors[i][jCell];
++            }
++
++            for (int jCell = 0; jCell < ColVectors[i].size(); jCell++)
++            {
++                colValueOfOneRow[jCell] = ValuesVector[i][jCell];
++            }
++
++            HYPRE_IJMatrixSetValues(A_hypre, 1, &colSize, &globalRowNumber, colNumberOfOneRow, colValueOfOneRow);
+         }
+-    
+-        HYPRE_IJMatrixSetValues(A_hypre, 1, &colSize, &globalRowNumber, colNumberOfOneRow, colValueOfOneRow);
++
++        HYPRE_IJMatrixAssemble(A_hypre);
++        HYPRE_IJMatrixGetObject(A_hypre, (void **)&parcsr_A_hypre);
++
++        HYPRE_IJVectorSetValues(b_hypre, localSize, rows, b);
++        HYPRE_IJVectorAssemble(b_hypre);
++        HYPRE_IJVectorGetObject(b_hypre, (void **)&par_b_hypre);
++
++        HYPRE_IJVectorSetValues(x_hypre, localSize, rows, fi);
++        HYPRE_IJVectorAssemble(x_hypre);
++        HYPRE_IJVectorGetObject(x_hypre, (void **)&par_x_hypre);
+     }
+     
+-    HYPRE_IJMatrixAssemble(A_hypre);
+-    HYPRE_IJMatrixGetObject(A_hypre, (void **)&parcsr_A_hypre);  
+-    
+-    HYPRE_IJVectorSetValues(b_hypre, localSize, rows, b);
+-    HYPRE_IJVectorAssemble(b_hypre);
+-    HYPRE_IJVectorGetObject(b_hypre, (void **)&par_b_hypre);
+-    
+-    HYPRE_IJVectorSetValues(x_hypre, localSize, rows, fi);
+-    HYPRE_IJVectorAssemble(x_hypre);
+-    HYPRE_IJVectorGetObject(x_hypre, (void **)&par_x_hypre);
+-    
+     int *precondID = reinterpret_cast <int *>(GlobalDataBase::GetDataPtr("precondID"));
+     HYPRE_Solver *precond = precondList[iEquation];
+ 
+     RDouble timeStartSolve = PHSPACE::TIME_SPACE::GetWallTime();
+     if (linearSolver == GaussSeidelMethod) 
+     {
+-        explicitSolve(gridIn, fi, diagCoef, b, upNeighCoef, dnNeighCoef);
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SOLVE,
++                        explicitSolve(gridIn, fi, diagCoef, b, upNeighCoef, dnNeighCoef));
+     }
+     else if (linearSolver == GMRESMethod) 
+     {
+-        HYPRE_ParCSRGMRESSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_ParCSRGMRESSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi);
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SETUP,
++                        HYPRE_ParCSRGMRESSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SOLVE,
++                        HYPRE_ParCSRGMRESSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_SOLUTION_GET,
++                        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi));
+ 
+         HYPRE_ParCSRGMRESGetNumIterations((*solver), &num_iterations);
+         HYPRE_ParCSRGMRESGetFinalRelativeResidualNorm((*solver), &residual);
+     }
+     else if (linearSolver == BicgstabMethod)
+     {
+-        HYPRE_ParCSRBiCGSTABSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_ParCSRBiCGSTABSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi);
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SETUP,
++                        HYPRE_ParCSRBiCGSTABSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SOLVE,
++                        HYPRE_ParCSRBiCGSTABSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_SOLUTION_GET,
++                        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi));
+         
+         // HYPRE_ParCSRBiCGSTABGetNumIterations((*solver), &num_iterations);
+         HYPRE_BiCGSTABGetNumIterations((*solver), &num_iterations);
+@@ -506,67 +546,91 @@ void hypreCalculator::mathLibSolve(Grid *gridIn, int iEquation, RDouble *fi, RDo
+     }
+     else if (linearSolver == AMGMethod)
+     {
+-        HYPRE_BoomerAMGSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_BoomerAMGSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi);
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SETUP,
++                        HYPRE_BoomerAMGSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SOLVE,
++                        HYPRE_BoomerAMGSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_SOLUTION_GET,
++                        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi));
+         HYPRE_BoomerAMGGetNumIterations((*solver), &num_iterations);
+         HYPRE_BoomerAMGGetFinalRelativeResidualNorm((*solver), &residual);
+     }
+     else if (linearSolver == PCGMethod)
+     {
+-        HYPRE_ParCSRPCGSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_ParCSRPCGSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi);
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SETUP,
++                        HYPRE_ParCSRPCGSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SOLVE,
++                        HYPRE_ParCSRPCGSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_SOLUTION_GET,
++                        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi));
+         HYPRE_ParCSRPCGGetNumIterations((*solver), &num_iterations);
+         HYPRE_ParCSRPCGGetFinalRelativeResidualNorm((*solver), &residual);
+     }
+     else if (linearSolver == FlexGMRESMethod) 
+     {
+-        HYPRE_ParCSRFlexGMRESSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_ParCSRFlexGMRESSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi);
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SETUP,
++                        HYPRE_ParCSRFlexGMRESSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SOLVE,
++                        HYPRE_ParCSRFlexGMRESSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_SOLUTION_GET,
++                        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi));
+         HYPRE_ParCSRFlexGMRESGetNumIterations((*solver), &num_iterations);
+         HYPRE_ParCSRFlexGMRESGetFinalRelativeResidualNorm((*solver), &residual);
+     }
+     else if (linearSolver == LGMRESMethod)
+     {
+-        HYPRE_ParCSRLGMRESSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_ParCSRLGMRESSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi);
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SETUP,
++                        HYPRE_ParCSRLGMRESSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SOLVE,
++                        HYPRE_ParCSRLGMRESSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_SOLUTION_GET,
++                        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi));
+         HYPRE_ParCSRLGMRESGetNumIterations((*solver), &num_iterations);
+         HYPRE_ParCSRLGMRESGetFinalRelativeResidualNorm((*solver), &residual);
+     }
+     else if (linearSolver == COGMRESMethod)
+     {
+-        HYPRE_ParCSRCOGMRESSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_ParCSRCOGMRESSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi);
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SETUP,
++                        HYPRE_ParCSRCOGMRESSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SOLVE,
++                        HYPRE_ParCSRCOGMRESSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_SOLUTION_GET,
++                        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi));
+         HYPRE_ParCSRCOGMRESGetNumIterations((*solver), &num_iterations);
+         HYPRE_ParCSRCOGMRESGetFinalRelativeResidualNorm((*solver), &residual);
+     }
+     else if (linearSolver == CGNRMethod)
+     {
+         HYPRE_ParCSRCGNRCreate(MPI_COMM_WORLD, solver);
+-        HYPRE_ParCSRCGNRSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_ParCSRCGNRSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi);
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SETUP,
++                        HYPRE_ParCSRCGNRSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SOLVE,
++                        HYPRE_ParCSRCGNRSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_SOLUTION_GET,
++                        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi));
+         HYPRE_ParCSRCGNRDestroy((*solver));
+         HYPRE_ParCSRCGNRGetNumIterations((*solver), &num_iterations);
+         HYPRE_ParCSRCGNRGetFinalRelativeResidualNorm((*solver), &residual);
+     }
+     else if (linearSolver == MGRMethod)
+     {
+-        HYPRE_MGRSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_MGRSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi);
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SETUP,
++                        HYPRE_MGRSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SOLVE,
++                        HYPRE_MGRSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_SOLUTION_GET,
++                        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi));
+         HYPRE_MGRGetNumIterations((*solver), &num_iterations);
+         HYPRE_MGRGetFinalRelativeResidualNorm((*solver), &residual);
+     }
+     else if (linearSolver == ILUMethod)
+     {
+-        HYPRE_ILUSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_ILUSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi);
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SETUP,
++                        HYPRE_ILUSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SOLVE,
++                        HYPRE_ILUSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_SOLUTION_GET,
++                        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi));
+         HYPRE_ILUGetNumIterations((*solver), &num_iterations);
+         HYPRE_ILUGetFinalRelativeResidualNorm((*solver), &residual);
+     }
+@@ -575,9 +639,12 @@ void hypreCalculator::mathLibSolve(Grid *gridIn, int iEquation, RDouble *fi, RDo
+         
+         destoryTempDataInAMGDD((*solver));
+ 
+-        HYPRE_BoomerAMGDDSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_BoomerAMGDDSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi);
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SETUP,
++                        HYPRE_BoomerAMGDDSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SOLVE,
++                        HYPRE_BoomerAMGDDSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_SOLUTION_GET,
++                        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi));
+         
+         HYPRE_BoomerAMGDDGetNumIterations((*solver), &num_iterations);
+         HYPRE_BoomerAMGDDGetFinalRelativeResidualNorm((*solver), &residual);
+@@ -585,17 +652,23 @@ void hypreCalculator::mathLibSolve(Grid *gridIn, int iEquation, RDouble *fi, RDo
+     }
+     else if (linearSolver == HybridMethod)
+     {
+-        HYPRE_ParCSRHybridSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_ParCSRHybridSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi);
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SETUP,
++                        HYPRE_ParCSRHybridSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SOLVE,
++                        HYPRE_ParCSRHybridSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_SOLUTION_GET,
++                        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi));
+         HYPRE_ParCSRHybridGetNumIterations((*solver), &num_iterations);
+         HYPRE_ParCSRHybridGetFinalRelativeResidualNorm((*solver), &residual);
+     }
+     else 
+     {
+-        HYPRE_ParCSRGMRESSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_ParCSRGMRESSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre);
+-        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi);
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SETUP,
++                        HYPRE_ParCSRGMRESSetup((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_LINEAR_SOLVE,
++                        HYPRE_ParCSRGMRESSolve((*solver), parcsr_A_hypre, par_b_hypre, par_x_hypre));
++        INCOM_TIME_CALL(iEquation, INCOM_SOLUTION_GET,
++                        HYPRE_IJVectorGetValues(x_hypre, localSize, rows, fi));
+         HYPRE_ParCSRGMRESGetNumIterations((*solver), &num_iterations);
+         HYPRE_ParCSRGMRESGetFinalRelativeResidualNorm((*solver), &residual);
+     }
+@@ -606,6 +679,7 @@ void hypreCalculator::mathLibSolve(Grid *gridIn, int iEquation, RDouble *fi, RDo
+     }
+ 
+     RDouble timeEndSolve = PHSPACE::TIME_SPACE::GetWallTime();
++    hypreSetupSolveWallTime += timeEndSolve - timeStartSolve;
+ 
+     for (int iCell = 0; iCell < localSize; iCell++)
+     {
+@@ -621,6 +695,13 @@ void hypreCalculator::mathLibSolve(Grid *gridIn, int iEquation, RDouble *fi, RDo
+ void hypreCalculator::mathLibSolveFinalize()
+ {
+ #ifdef USE_HypreLib
++    RDouble hypreSetupSolveWallTimeMax = hypreSetupSolveWallTime;
++    if (PHMPI::GetNumberOfProcessor() > 1)
++    {
++        PH_AllReduce(&hypreSetupSolveWallTime, &hypreSetupSolveWallTimeMax, 1, PH_MAX);
++    }
++    WriteLogFile("PERF_HYPRE_WALL_S=", hypreSetupSolveWallTimeMax);
++
+     delete [] rows;
+     for (int iCell = 0; iCell < localSize; iCell++)
+     {
+@@ -630,11 +711,16 @@ void hypreCalculator::mathLibSolveFinalize()
+     delete [] colValueOfOneRow;
+     delete [] colNumberOfOneRow;
+ 
+-    int linearSolverSize = GlobalDataBase::GetIntParaFromDB("linearSolverSize");
++    const int linearSolverSize = 50;
+ 
+     int *linearSolverID = reinterpret_cast <int *>(GlobalDataBase::GetDataPtr("solMethodOfLinEqSystem"));
++    int *maxIterOfEachEq = reinterpret_cast<int *>(GlobalDataBase::GetDataPtr("maxIterOfEachEq"));
+     for (int iSolver = 0 ; iSolver < linearSolverSize; iSolver++)
+     {
++        if (maxIterOfEachEq[iSolver] < 0)
++        {
++            continue;
++        }
+         int linearSolver = linearSolverID[iSolver];
+         HYPRE_Solver *solver = solverList[iSolver];
+ 
+@@ -690,10 +776,14 @@ void hypreCalculator::mathLibSolveFinalize()
+         }
+     }
+ 
+-    int *precondID = reinterpret_cast <int *>(GlobalDataBase::GetDataPtr("precondID"));
++    int *precondID = reinterpret_cast <int *>(GlobalDataBase::GetDataPtr("precondMethodOfLinEqSystem"));
+     
+     for (int iSolver = 0 ; iSolver < linearSolverSize; iSolver++)
+     {
++        if (maxIterOfEachEq[iSolver] <= 0)
++        {
++            continue;
++        }
+         if (precondID[iSolver] == iAMG)
+         {
+             HYPRE_BoomerAMGDestroy(*(precondList[iSolver]));
+@@ -1122,4 +1212,6 @@ void hypreCalculator::destoryTempDataInAMGDD(HYPRE_Solver& amgddsolver)
+ }
+ #endif
+ 
++#undef INCOM_TIME_CALL
++
+ }
+diff --git a/Main/CMakeLists.txt b/Main/CMakeLists.txt
+index ff43237..ac067e8 100644
+--- a/Main/CMakeLists.txt
++++ b/Main/CMakeLists.txt
+@@ -214,7 +214,7 @@ if(BUILD_GMRESSolver)
+   list(APPEND LINK_LIBRARY_LIST ${CMAKE_DL_LIBS})
+ endif()
+ #23. link a target to given libraries:
+-target_link_libraries(${EXECUTABLE_TARGET_NAME} ${LINK_LIBRARY_LIST})
++target_link_libraries(${EXECUTABLE_TARGET_NAME} ${LINK_LIBRARY_LIST} ${MPI_CXX_LIBRARIES})
+ 
+ if(USE_TecplotLib)
+   if(WIN32)
+diff --git a/PHengLEI/CMakeLists.txt b/PHengLEI/CMakeLists.txt
+index e7a6650..f4e1930 100644
+--- a/PHengLEI/CMakeLists.txt
++++ b/PHengLEI/CMakeLists.txt
+@@ -9,6 +9,7 @@ set(EXEC_WORKING_DIR PHengLEIv3d0)
+ # Allow side-by-side CPU and GPU builds to use distinct executable names.
+ set(PHENGLEI_EXECUTABLE_NAME "${CMAKE_PROJECT_NAME}" CACHE STRING "Name of the PHengLEI executable")
+ set(PHENGLEI_LIBRARY_OUTPUT_ROOT "" CACHE PATH "Optional root directory for build-specific static libraries")
++set(PHENGLEI_HYPRE_ROOT "" CACHE PATH "Optional external CPU HYPRE installation")
+ 
+ #set COMPILER:
+ if(WIN32)
+@@ -76,9 +77,36 @@ if(BUILD_IncomSolver)
+   opt(UnapLib "Build Pressure Based Solver or not" OFF)# Build IncomSolver option.
+   opt(YhamgLib "Build Pressure Based Solver or not" OFF)# Build IncomSolver option.
+ endif()
++option(USE_LinglongAMG "Enable the persistent LinglongAMG pressure session" OFF)
++option(PHENGLEI_LINGLONG_TESTS "Build real-SDK session and lifecycle tests" OFF)
++if(USE_LinglongAMG)
++  if(WIN32 OR NOT BUILD_IncomSolver OR NOT USE_HypreLib)
++    message(FATAL_ERROR "Linglong pressure requires Linux, BUILD_IncomSolver=ON and USE_HypreLib=ON")
++  endif()
++  set(LINGLONGAMG_ROOT "$ENV{LINGLONGAMG_SDK}" CACHE PATH "LinglongAMG CUDA 13 SDK root")
++  find_path(LINGLONGAMG_INCLUDE_DIR linglongamg.h HINTS "${LINGLONGAMG_ROOT}/lib" NO_DEFAULT_PATH)
++  find_library(LINGLONGAMG_LIBRARY linglongamg HINTS "${LINGLONGAMG_ROOT}/lib" NO_DEFAULT_PATH)
++  if(NOT LINGLONGAMG_INCLUDE_DIR OR NOT LINGLONGAMG_LIBRARY)
++    message(FATAL_ERROR "Set LINGLONGAMG_ROOT to the new SDK containing lib/linglongamg.h and lib/liblinglongamg.so")
++  endif()
++  file(STRINGS "${LINGLONGAMG_INCLUDE_DIR}/linglongamg.h" _linglong_session_api REGEX "linglongamg_refresh_license")
++  if(NOT _linglong_session_api)
++    message(FATAL_ERROR "This adapter requires the prepared-authorization session API in the new 26.44 SDK")
++  endif()
++  find_package(CUDAToolkit 13.1 REQUIRED)
++  if(NOT CUDAToolkit_VERSION VERSION_LESS 14 OR NOT TARGET CUDA::cusparse)
++    message(FATAL_ERROR "This SDK requires CUDA 13.x (at least 13.1), including cuSPARSE")
++  endif()
++endif()
++if(PHENGLEI_LINGLONG_TESTS AND NOT USE_LinglongAMG)
++  message(FATAL_ERROR "PHENGLEI_LINGLONG_TESTS requires USE_LinglongAMG=ON")
++endif()
+ opt_build(GMRESSolver "Build GMRES Solver or not" OFF)# Build GMRESSolver option.
+ opt_build(SpecDiffHybSolver "Build Spectra-Difference Hybrid Solver or not" OFF) #Build Spectra-Difference Hybrid Solver or not.
+ opt(DOUBLE_PRECISION "Use double precision or not" ON)
++if(USE_LinglongAMG AND NOT USE_DOUBLE_PRECISION)
++  message(FATAL_ERROR "The Linglong session requires USE_DOUBLE_PRECISION=ON")
++endif()
+ opt(ERROR_DATA_DEBUG "Build error data debug or not" OFF)
+ opt(HYBRIDSOLVER "Build hybrid solver or not" OFF) #Build hybrid solver or not.
+ opt(OCC "Use OpenCasCade Library" OFF) #Use occ or not.
+@@ -208,7 +236,9 @@ if(USE_OMP)
+ endif(USE_OMP)
+ 
+ find_package(MPI REQUIRED)
+-include_directories ("${MPI_CXX_INCLUDE_DIRS}")
++if(MPI_CXX_INCLUDE_DIRS)
++  include_directories("${MPI_CXX_INCLUDE_DIRS}")
++endif()
+ message (STATUS "MPI_CXX_INCLUDE_DIRS = ${MPI_CXX_INCLUDE_DIRS}") 
+ message (STATUS "MPI_CXX_LIBRARIES = ${MPI_CXX_LIBRARIES}") 
+ 
+@@ -325,7 +355,11 @@ set(MGRID_H_PATH ${PROJECT_SOURCE_DIR}/../PHengLEI/3rdparty/mgrid/include)
+ include_directories("${MGRID_H_PATH}")
+ 
+ if(USE_HypreLib)
+-  set(HYPRE_H_PATH ${PROJECT_SOURCE_DIR}/../PHengLEI/3rdparty/hypre/include)
++  if(PHENGLEI_HYPRE_ROOT)
++    set(HYPRE_H_PATH ${PHENGLEI_HYPRE_ROOT}/include)
++  else()
++    set(HYPRE_H_PATH ${PROJECT_SOURCE_DIR}/../PHengLEI/3rdparty/hypre/include)
++  endif()
+   include_directories("${HYPRE_H_PATH}")
+ endif(USE_HypreLib)
+ 
