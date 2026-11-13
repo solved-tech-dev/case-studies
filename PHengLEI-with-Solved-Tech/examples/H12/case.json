@@ -1,0 +1,30 @@
+{
+  "case": "H12",
+  "upstream_tutorial": "H12_ThreeD_Species_UPWIND_4CPU",
+  "original_grid": "methaneair.cas",
+  "dimensions": 3,
+  "zones": 1,
+  "cells": 225610,
+  "grid": [
+    {
+      "file": "mesh_0.fts.gz",
+      "uncompressed_bytes": 16888970,
+      "uncompressed_sha256": "61ac4e4b5aedfc4ec690930ee385273ad1bdf349a3cfbe62cb8ecb46f05fbd7e"
+    },
+    {
+      "file": "mesh_0.bcname.gz",
+      "uncompressed_bytes": 699,
+      "uncompressed_sha256": "90560dbfb2f91474fbdcb8252ae9b9d4f5d049fcf5a3de4e8de68220a052a7fe"
+    },
+    {
+      "file": "mesh_0.bcmesh.gz",
+      "uncompressed_bytes": 605857,
+      "uncompressed_sha256": "8bf462f3695f88f5bcb14bd3163baf8228f56b640e9f6fc871a66ddb8aa43c89"
+    },
+    {
+      "file": "mesh_0.wdt.gz",
+      "uncompressed_bytes": 7223616,
+      "uncompressed_sha256": "e380cec869a37a1b6fbf059fc21ffd7989de01ff861a898906a810ab69add31a"
+    }
+  ]
+}
