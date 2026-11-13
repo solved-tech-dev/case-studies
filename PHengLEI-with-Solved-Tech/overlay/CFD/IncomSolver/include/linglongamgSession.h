@@ -6,7 +6,7 @@
 
 namespace PHSPACE
 {
-struct LinglongSessionReport
+struct LinglongAMGSessionReport
 {
     unsigned long long call = 0;
     int iterations = 0;
@@ -20,13 +20,13 @@ struct LinglongSessionReport
 // One instance owns one SDK solver handle. Matrix setup is rebuilt on each
 // call; every result requires a successful SDK authorization/commit query.
 // Not thread-safe. One selected GPU, host FP64 data and int32 CSR indices.
-class LinglongSession
+class LinglongAMGSession
 {
 public:
-    LinglongSession(const std::string& config, int device,
+    LinglongAMGSession(const std::string& config, int device,
                     const std::string& library = std::string());
-    ~LinglongSession();
-    LinglongSessionReport Solve(const AMGBenchmarkCSR& matrix,
+    ~LinglongAMGSession();
+    LinglongAMGSessionReport Solve(const AMGBenchmarkCSR& matrix,
                                const double* rhs, double* solution);
     double CreateMilliseconds() const;
     const std::string& DeviceDescription() const;
@@ -35,7 +35,7 @@ public:
 private:
     struct Impl;
     std::unique_ptr<Impl> impl;
-    LinglongSession(const LinglongSession&) = delete;
-    LinglongSession& operator=(const LinglongSession&) = delete;
+    LinglongAMGSession(const LinglongAMGSession&) = delete;
+    LinglongAMGSession& operator=(const LinglongAMGSession&) = delete;
 };
 }

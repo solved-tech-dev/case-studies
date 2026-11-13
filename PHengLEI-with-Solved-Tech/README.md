@@ -40,7 +40,7 @@ bash scripts/build.sh hypre
 
 export LINGLONGAMG_ROOT=/path/to/LinglongAMG
 export CUDA_ROOT=/path/to/cuda-13.x
-export PHENGLEI_LINGLONG_TESTS=ON
+export PHENGLEI_LINGLONGAMG_TESTS=ON
 bash scripts/build.sh linglong
 ```
 
@@ -61,6 +61,8 @@ python3 scripts/summarize.py runs/H{11,12,13}-{hypre,linglong} > summary.csv
 
 每次启动一个 MPI 进程。玲珑路线使用单区、单 GPU、FP64 及 32 位 CSR 索引，`--device` 取作业内可见的 CUDA 编号，默认 0。HYPRE 路线沿用算例的原生压力求解参数。可通过 `PHENGLEI_EXE` 指定已构建的二进制，通过 `--prepare-only` 仅解压并生成运行目录。运行脚本拒绝覆盖已有算例目录。
 
+已有运行目录的参数需要迁移后才能用新版程序启动。请将 `useLinglongPressure`、`linglongDevice`、`linglongConfigFile`、`linglongLogFile` 依次改为 `useLinglongAMGPressure`、`linglongamgDevice`、`linglongamgConfigFile`、`linglongamgLogFile`，或让 `run-case.py` 生成新的运行目录。若脚本使用环境变量覆盖动态库，请将 `PHENGLEI_LINGLONG_LIBRARY` 改为 `PHENGLEI_LINGLONGAMG_LIBRARY`。从旧版更新时，使用新的 `PHENGLEI_SOURCE_DIR` 重新准备源码，并用新的 `PHENGLEI_BUILD_DIR` 构建。
+
 ## 会话和验证
 
 压力适配器初始化时创建 SDK 求解句柄。每次压力方程装配后，转换成 CSR（压缩稀疏行格式），上传矩阵和向量，再执行 `setup → solve → get_solve_info`。更换线性系统时对原句柄执行 `reset`，后续仍重新构建 AMG 层级。在 26.46 中，`solve` 生成待提交的解，`get_solve_info` 重新检查授权，成功后提交设备端结果。适配器随后下载、校验并写回风雷。CMake 检查实际使用的会话接口 `create_from_config`、`get_solve_info` 和 `reset`。退出时释放句柄。授权或运行错误会终止求解，失效会话需要重新启动进程。
@@ -69,6 +71,6 @@ python3 scripts/summarize.py runs/H{11,12,13}-{hypre,linglong} > summary.csv
 bash scripts/test-session.sh "$PWD/runs/session-test"
 ```
 
-先用 `PHENGLEI_LINGLONG_TESTS=ON` 构建，在有有效授权的 GPU 作业中运行会话测试。测试转发层调用真实 SDK，记录调用计数与句柄，并验证 SDK 查询被拒时不会把结果写回风雷。
+先用 `PHENGLEI_LINGLONGAMG_TESTS=ON` 构建，在有有效授权的 GPU 作业中运行会话测试。测试转发层调用真实 SDK，记录调用计数与句柄，并验证 SDK 查询被拒时不会把结果写回风雷。
 
-`run.json` 给出进程退出状态与墙钟。玲珑的 `results/linglong_pressure.csv` 逐次记录独立重算的残差、收敛标记、上传、setup、solve、结果查询、下载和校验时间。主机侧 setup/solve 含设备同步，`sdk_setup_ms` 和 `sdk_solve_ms` 记录 SDK 自报值。压力收敛标记和外层 CFD 收敛分开核对。H11、H12、H13 的最新 20 步计时来自 LinglongAMG 26.46 常驻 worker 测试，压力后端墙钟包含进程间通信。当前运行脚本走进程内直接适配。两条路径的测试范围与口径见[验证记录](docs/验证记录.md)。
+`run.json` 给出进程退出状态与墙钟。玲珑的 `results/linglongamg_pressure.csv` 逐次记录独立重算的残差、收敛标记、上传、setup、solve、结果查询、下载和校验时间。主机侧 setup/solve 含设备同步，`sdk_setup_ms` 和 `sdk_solve_ms` 记录 SDK 自报值。压力收敛标记和外层 CFD 收敛分开核对。H11、H12、H13 的最新 20 步计时来自 LinglongAMG 26.46 常驻 worker 测试，压力后端墙钟包含进程间通信。当前运行脚本走进程内直接适配。两条路径的测试范围与口径见[验证记录](docs/验证记录.md)。

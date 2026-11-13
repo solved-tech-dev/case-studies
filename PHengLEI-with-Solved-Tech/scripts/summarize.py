@@ -13,7 +13,9 @@ FIELDS = (
 
 def read_summary(directory):
     summary = json.loads((directory / "run.json").read_text())
-    pressure = directory / "results" / "linglong_pressure.csv"
+    pressure = directory / "results" / "linglongamg_pressure.csv"
+    if not pressure.is_file():
+        pressure = directory / "results" / "linglong_pressure.csv"
     if pressure.is_file():
         with pressure.open(newline="") as source:
             rows = list(csv.DictReader(source))
