@@ -1,4 +1,4 @@
-#include "linglongSession.h"
+#include "linglongamgSession.h"
 #include "linglongamg.h"
 #include <cuda_runtime_api.h>
 #include <algorithm>
@@ -12,8 +12,8 @@
 #include <type_traits>
 #include <vector>
 
-#ifndef PHENGLEI_LINGLONG_LIBRARY_PATH
-#define PHENGLEI_LINGLONG_LIBRARY_PATH "liblinglongamg.so"
+#ifndef PHENGLEI_LINGLONGAMG_LIBRARY_PATH
+#define PHENGLEI_LINGLONGAMG_LIBRARY_PATH "liblinglongamg.so"
 #endif
 
 namespace PHSPACE
@@ -116,7 +116,7 @@ double Residual(const AMGBenchmarkCSR& a, const double* b, const double* x)
 }
 }
 
-struct LinglongSession::Impl
+struct LinglongAMGSession::Impl
 {
     void* library = nullptr;
     linglongamg_handle_t solver = nullptr;
@@ -168,16 +168,16 @@ struct LinglongSession::Impl
     }
 };
 
-LinglongSession::LinglongSession(const std::string& config, int device,
+LinglongAMGSession::LinglongAMGSession(const std::string& config, int device,
                                  const std::string& library) : impl(new Impl)
 {
     static_assert(std::is_same<linglongamg_real_t, double>::value, "FP64 SDK required");
     if (config.empty() || device < 0) throw std::invalid_argument("config path and nonnegative device required");
     impl->device = device;
     DeviceScope selected(device);
-    const char* overridePath = std::getenv("PHENGLEI_LINGLONG_LIBRARY");
+    const char* overridePath = std::getenv("PHENGLEI_LINGLONGAMG_LIBRARY");
     const std::string path = !library.empty() ? library
-        : (overridePath && *overridePath ? overridePath : PHENGLEI_LINGLONG_LIBRARY_PATH);
+        : (overridePath && *overridePath ? overridePath : PHENGLEI_LINGLONGAMG_LIBRARY_PATH);
     impl->library = dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL);
     if (!impl->library) throw std::runtime_error(std::string("load LinglongAMG: ") + dlerror());
 #define LOAD(member, function) impl->member = Symbol<decltype(impl->member)>(impl->library, #function)
@@ -200,17 +200,17 @@ LinglongSession::LinglongSession(const std::string& config, int device,
     if (!impl->solver) throw std::runtime_error("SDK returned success without a solver handle");
 }
 
-LinglongSession::~LinglongSession() = default;
-double LinglongSession::CreateMilliseconds() const { return impl->createMs; }
-const std::string& LinglongSession::DeviceDescription() const { return impl->description; }
-void LinglongSession::Close() { impl->Close(); }
+LinglongAMGSession::~LinglongAMGSession() = default;
+double LinglongAMGSession::CreateMilliseconds() const { return impl->createMs; }
+const std::string& LinglongAMGSession::DeviceDescription() const { return impl->description; }
+void LinglongAMGSession::Close() { impl->Close(); }
 
-LinglongSessionReport LinglongSession::Solve(const AMGBenchmarkCSR& a, const double* b, double* x)
+LinglongAMGSessionReport LinglongAMGSession::Solve(const AMGBenchmarkCSR& a, const double* b, double* x)
 {
     const auto totalStart = Clock::now();
     const int n = Validate(a, b, x);
     if (!impl->solver || impl->failed) throw std::runtime_error("LinglongAMG session is closed or failed; no automatic recreation");
-    LinglongSessionReport report;
+    LinglongAMGSessionReport report;
     report.initialL2 = Residual(a, b, x);
     long double rhsNorm = 0;
     for (int row = 0; row < n; ++row) rhsNorm = std::hypot(rhsNorm, static_cast<long double>(b[row]));

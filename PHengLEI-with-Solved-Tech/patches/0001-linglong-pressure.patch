@@ -1,5 +1,5 @@
 diff --git a/CFD/CMakeLists.txt b/CFD/CMakeLists.txt
-index 4f0f782..410d6ab 100644
+index 4f0f782..bad3846 100644
 --- a/CFD/CMakeLists.txt
 +++ b/CFD/CMakeLists.txt
 @@ -63,6 +63,9 @@ if(BUILD_IncomSolver)
@@ -53,10 +53,10 @@ index 4f0f782..410d6ab 100644
 +  list(APPEND INCOMSOLVER_H_LIST ${INCOMSOLVER_H_PATH}/amgBenchmarkLinearSystem.h)
 +  list(APPEND INCOMSOLVER_CPP_LIST ${INCOMSOLVER_CPP_PATH}/amgBenchmarkLinearSystem.cpp)
 +
-+  list(APPEND INCOMSOLVER_H_LIST ${INCOMSOLVER_H_PATH}/linglongPressureAdapter.h
-+    ${INCOMSOLVER_H_PATH}/linglongSession.h)
-+  list(APPEND INCOMSOLVER_CPP_LIST ${INCOMSOLVER_CPP_PATH}/linglongPressureAdapter.cpp
-+    ${INCOMSOLVER_CPP_PATH}/linglongSession.cpp)
++  list(APPEND INCOMSOLVER_H_LIST ${INCOMSOLVER_H_PATH}/linglongamgPressureAdapter.h
++    ${INCOMSOLVER_H_PATH}/linglongamgSession.h)
++  list(APPEND INCOMSOLVER_CPP_LIST ${INCOMSOLVER_CPP_PATH}/linglongamgPressureAdapter.cpp
++    ${INCOMSOLVER_CPP_PATH}/linglongamgSession.cpp)
 +endif()
  source_group(IncomSolver\\src FILES ${INCOMSOLVER_CPP_LIST})
  endif(BUILD_IncomSolver)
@@ -80,18 +80,18 @@ index 4f0f782..410d6ab 100644
 +if(USE_LinglongAMG)
 +  target_include_directories(${CFD_TARGET_NAME} PRIVATE "${LINGLONGAMG_INCLUDE_DIR}")
 +  target_compile_definitions(${CFD_TARGET_NAME} PRIVATE
-+    PHENGLEI_LINGLONG_LIBRARY_PATH="${LINGLONGAMG_LIBRARY}")
++    PHENGLEI_LINGLONGAMG_LIBRARY_PATH="${LINGLONGAMG_LIBRARY}")
 +  list(APPEND LINK_LIBRARY_LIST CUDA::cudart ${CMAKE_DL_LIBS})
-+  if(PHENGLEI_LINGLONG_TESTS)
-+    add_executable(linglong_session_test IncomSolver/tests/linglongSessionTest.cpp
-+      IncomSolver/src/linglongSession.cpp IncomSolver/src/amgBenchmarkLinearSystem.cpp)
-+    target_include_directories(linglong_session_test PRIVATE IncomSolver/include "${LINGLONGAMG_INCLUDE_DIR}")
-+    target_compile_definitions(linglong_session_test PRIVATE
-+      PHENGLEI_LINGLONG_LIBRARY_PATH="${LINGLONGAMG_LIBRARY}")
-+    target_link_libraries(linglong_session_test CUDA::cudart ${CMAKE_DL_LIBS})
-+    add_library(linglong_session_audit SHARED IncomSolver/tests/linglongSessionAudit.cpp)
-+    target_include_directories(linglong_session_audit PRIVATE "${LINGLONGAMG_INCLUDE_DIR}")
-+    target_link_libraries(linglong_session_audit ${CMAKE_DL_LIBS})
++  if(PHENGLEI_LINGLONGAMG_TESTS)
++    add_executable(linglongamg_session_test IncomSolver/tests/linglongamgSessionTest.cpp
++      IncomSolver/src/linglongamgSession.cpp IncomSolver/src/amgBenchmarkLinearSystem.cpp)
++    target_include_directories(linglongamg_session_test PRIVATE IncomSolver/include "${LINGLONGAMG_INCLUDE_DIR}")
++    target_compile_definitions(linglongamg_session_test PRIVATE
++      PHENGLEI_LINGLONGAMG_LIBRARY_PATH="${LINGLONGAMG_LIBRARY}")
++    target_link_libraries(linglongamg_session_test CUDA::cudart ${CMAKE_DL_LIBS})
++    add_library(linglongamg_session_audit SHARED IncomSolver/tests/linglongamgSessionAudit.cpp)
++    target_include_directories(linglongamg_session_audit PRIVATE "${LINGLONGAMG_INCLUDE_DIR}")
++    target_link_libraries(linglongamg_session_audit ${CMAKE_DL_LIBS})
 +  endif()
 +endif()
 +
@@ -116,37 +116,51 @@ index be1edf1..4a27b05 100644
  }
 -
 diff --git a/CFD/IncomSolver/src/IncomUnstructSolver.cpp b/CFD/IncomSolver/src/IncomUnstructSolver.cpp
-index 8a436ec..2be5af9 100644
+index 8a436ec..e13767b 100644
 --- a/CFD/IncomSolver/src/IncomUnstructSolver.cpp
 +++ b/CFD/IncomSolver/src/IncomUnstructSolver.cpp
 @@ -1,5 +1,8 @@
  #pragma once
  #include"IncomUnstructSolver.h"
 +#ifdef USE_LinglongAMG
-+#include "linglongPressureAdapter.h"
++#include "linglongamgPressureAdapter.h"
 +#endif
  #include"TK_Time.h"
  #include"unapCalculator.h"
  #include"yhamgCalculator.h"
-@@ -16,9 +19,26 @@ IncomUnstructSolver::IncomUnstructSolver()
+@@ -15,10 +18,40 @@ IncomUnstructSolver::IncomUnstructSolver()
+     FreeControlParameters();
      controlParameters = new Param_INCompSolverUnstruct();
  
++    // Retired input spellings are diagnostics only, never accepted aliases.
++    // Reject them explicitly so an old pressure switch cannot silently select HYPRE.
++    const struct { const char *previous, *current; int type; } renamedParameters[] = {
++        {"useLinglongPressure", "useLinglongAMGPressure", PHINT},
++        {"linglongDevice", "linglongamgDevice", PHINT},
++        {"linglongConfigFile", "linglongamgConfigFile", PHSTRING},
++        {"linglongLogFile", "linglongamgLogFile", PHSTRING}
++    };
++    for (const auto &parameter : renamedParameters)
++        if (GlobalDataBase::IsExist(parameter.previous, parameter.type, 1))
++            TK_Exit::ExceptionExit(std::string("Renamed LinglongAMG parameter: ") +
++                parameter.previous + "; use " + parameter.current);
++
      int mathLibType = GlobalDataBase::GetIntParaFromDB("mathLibType");
-+    const int useLinglong = GlobalDataBase::IsExist("useLinglongPressure", PHINT, 1)
-+        ? GlobalDataBase::GetIntParaFromDB("useLinglongPressure") : 0;
-+    if (useLinglong != 0 && useLinglong != 1)
-+        TK_Exit::ExceptionExit("useLinglongPressure must be 0 or 1");
-+    if (useLinglong && mathLibType != HYPRELib)
-+        TK_Exit::ExceptionExit("Linglong pressure requires mathLibType=0 for other equations");
++    const int useLinglongAMG = GlobalDataBase::IsExist("useLinglongAMGPressure", PHINT, 1)
++        ? GlobalDataBase::GetIntParaFromDB("useLinglongAMGPressure") : 0;
++    if (useLinglongAMG != 0 && useLinglongAMG != 1)
++        TK_Exit::ExceptionExit("useLinglongAMGPressure must be 0 or 1");
++    if (useLinglongAMG && mathLibType != HYPRELib)
++        TK_Exit::ExceptionExit("LinglongAMG pressure requires mathLibType=0 for other equations");
      if (mathLibType == HYPRELib)
      {
 -        AxEqualbCalculator = new hypreCalculator();
-+        if (useLinglong)
++        if (useLinglongAMG)
 +        {
 +#ifdef USE_LinglongAMG
-+            AxEqualbCalculator = new linglongPressureAdapter();
++            AxEqualbCalculator = new linglongamgPressureAdapter();
 +#else
-+            TK_Exit::ExceptionExit("useLinglongPressure=1 requires USE_LinglongAMG=ON");
++            TK_Exit::ExceptionExit("useLinglongAMGPressure=1 requires USE_LinglongAMG=ON");
 +#endif
 +        }
 +        else
@@ -156,7 +170,7 @@ index 8a436ec..2be5af9 100644
      }
      else if (mathLibType == UNAPLib)
      {
-@@ -199,7 +219,7 @@ IncomUnstructSolver::IncomUnstructSolver()
+@@ -199,7 +232,7 @@ IncomUnstructSolver::IncomUnstructSolver()
  
  IncomUnstructSolver::~IncomUnstructSolver()
  {
@@ -685,7 +699,7 @@ index ff43237..ac067e8 100644
  if(USE_TecplotLib)
    if(WIN32)
 diff --git a/PHengLEI/CMakeLists.txt b/PHengLEI/CMakeLists.txt
-index e7a6650..e279899 100644
+index e7a6650..a39d55d 100644
 --- a/PHengLEI/CMakeLists.txt
 +++ b/PHengLEI/CMakeLists.txt
 @@ -9,6 +9,7 @@ set(EXEC_WORKING_DIR PHengLEIv3d0)
@@ -701,10 +715,10 @@ index e7a6650..e279899 100644
    opt(YhamgLib "Build Pressure Based Solver or not" OFF)# Build IncomSolver option.
  endif()
 +option(USE_LinglongAMG "Enable the persistent LinglongAMG pressure session" OFF)
-+option(PHENGLEI_LINGLONG_TESTS "Build real-SDK session and lifecycle tests" OFF)
++option(PHENGLEI_LINGLONGAMG_TESTS "Build real-SDK session and lifecycle tests" OFF)
 +if(USE_LinglongAMG)
 +  if(WIN32 OR NOT BUILD_IncomSolver OR NOT USE_HypreLib)
-+    message(FATAL_ERROR "Linglong pressure requires Linux, BUILD_IncomSolver=ON and USE_HypreLib=ON")
++    message(FATAL_ERROR "LinglongAMG pressure requires Linux, BUILD_IncomSolver=ON and USE_HypreLib=ON")
 +  endif()
 +  set(LINGLONGAMG_ROOT "$ENV{LINGLONGAMG_SDK}" CACHE PATH "LinglongAMG CUDA 13 SDK root")
 +  find_path(LINGLONGAMG_INCLUDE_DIR linglongamg.h HINTS "${LINGLONGAMG_ROOT}/lib" NO_DEFAULT_PATH)
@@ -712,10 +726,10 @@ index e7a6650..e279899 100644
 +  if(NOT LINGLONGAMG_INCLUDE_DIR OR NOT LINGLONGAMG_LIBRARY)
 +    message(FATAL_ERROR "Set LINGLONGAMG_ROOT to the new SDK containing lib/linglongamg.h and lib/liblinglongamg.so")
 +  endif()
-+  foreach(_linglong_required_api linglongamg_create_from_config linglongamg_get_solve_info linglongamg_reset)
-+    file(STRINGS "${LINGLONGAMG_INCLUDE_DIR}/linglongamg.h" _linglong_session_api REGEX "${_linglong_required_api}\\(")
-+    if(NOT _linglong_session_api)
-+      message(FATAL_ERROR "LinglongAMG SDK is missing the required session API: ${_linglong_required_api}")
++  foreach(_linglongamg_required_api linglongamg_create_from_config linglongamg_get_solve_info linglongamg_reset)
++    file(STRINGS "${LINGLONGAMG_INCLUDE_DIR}/linglongamg.h" _linglongamg_session_api REGEX "${_linglongamg_required_api}\\(")
++    if(NOT _linglongamg_session_api)
++      message(FATAL_ERROR "LinglongAMG SDK is missing the required session API: ${_linglongamg_required_api}")
 +    endif()
 +  endforeach()
 +  find_package(CUDAToolkit 13.1 REQUIRED)
@@ -723,14 +737,14 @@ index e7a6650..e279899 100644
 +    message(FATAL_ERROR "This SDK requires CUDA 13.x (at least 13.1), including cuSPARSE")
 +  endif()
 +endif()
-+if(PHENGLEI_LINGLONG_TESTS AND NOT USE_LinglongAMG)
-+  message(FATAL_ERROR "PHENGLEI_LINGLONG_TESTS requires USE_LinglongAMG=ON")
++if(PHENGLEI_LINGLONGAMG_TESTS AND NOT USE_LinglongAMG)
++  message(FATAL_ERROR "PHENGLEI_LINGLONGAMG_TESTS requires USE_LinglongAMG=ON")
 +endif()
  opt_build(GMRESSolver "Build GMRES Solver or not" OFF)# Build GMRESSolver option.
  opt_build(SpecDiffHybSolver "Build Spectra-Difference Hybrid Solver or not" OFF) #Build Spectra-Difference Hybrid Solver or not.
  opt(DOUBLE_PRECISION "Use double precision or not" ON)
 +if(USE_LinglongAMG AND NOT USE_DOUBLE_PRECISION)
-+  message(FATAL_ERROR "The Linglong session requires USE_DOUBLE_PRECISION=ON")
++  message(FATAL_ERROR "The LinglongAMG session requires USE_DOUBLE_PRECISION=ON")
 +endif()
  opt(ERROR_DATA_DEBUG "Build error data debug or not" OFF)
  opt(HYBRIDSOLVER "Build hybrid solver or not" OFF) #Build hybrid solver or not.

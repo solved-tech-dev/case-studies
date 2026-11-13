@@ -18,7 +18,7 @@ extra=()
 case "$mode" in
   linglong)
     linglong=ON
-    tests=${PHENGLEI_LINGLONG_TESTS:-OFF}
+    tests=${PHENGLEI_LINGLONGAMG_TESTS:-OFF}
     sdk=$(cd -- "${LINGLONGAMG_ROOT:?Set LINGLONGAMG_ROOT to the SDK}" && pwd)
     cuda=$(cd -- "${CUDA_ROOT:?Set CUDA_ROOT to CUDA 13.x}" && pwd)
     extra=(-DLINGLONGAMG_ROOT="$sdk" -DCUDAToolkit_ROOT="$cuda")
@@ -35,7 +35,7 @@ build_dir=$(cd -- "$build_dir" && pwd)
   -DBUILD_GPU=OFF -DBUILD_GMRESSolver=OFF -DBUILD_SpecDiffHybSolver=OFF \
   -DBUILD_DemoSolver=OFF -DBUILD_LBMSolverMPI=OFF -DBUILD_LBMSolverOMP=OFF \
   -DUSE_HypreLib=ON -DUSE_UnapLib=OFF -DUSE_YhamgLib=OFF -DUSE_DOUBLE_PRECISION=ON \
-  -DUSE_LinglongAMG="$linglong" -DPHENGLEI_LINGLONG_TESTS="$tests" \
+  -DUSE_LinglongAMG="$linglong" -DPHENGLEI_LINGLONGAMG_TESTS="$tests" \
   -DPHENGLEI_HYPRE_ROOT="$hypre" \
   -DBUILD_LIBRARY_TYPE=Static -DPHENGLEI_LIBRARY_OUTPUT_ROOT="$build_dir/lib" \
   -DPHENGLEI_EXECUTABLE_NAME=PHengLEIv3d0 "${extra[@]}" "$@"

@@ -43,12 +43,12 @@ def stage(run, inputs, manifest, args):
         for key in (b"maxSimuStep", b"intervalStepFlow", b"intervalStepPlot"):
             data = set_parameter(data, b"int", key, str(args.steps).encode())
         data = set_parameter(data, b"int", b"mathLibType", b"0")
-        data = set_parameter(data, b"int", b"useLinglongPressure", b"1" if args.backend == "linglong" else b"0")
+        data = set_parameter(data, b"int", b"useLinglongAMGPressure", b"1" if args.backend == "linglong" else b"0")
         if args.backend == "linglong":
             copy2(PACKAGE / "examples" / "linglongamg_config.json", run / "bin")
-            data = set_parameter(data, b"int", b"linglongDevice", str(args.device).encode())
-            data = set_parameter(data, b"string", b"linglongConfigFile", b'"./bin/linglongamg_config.json"')
-            data = set_parameter(data, b"string", b"linglongLogFile", b'"./results/linglong_pressure.csv"')
+            data = set_parameter(data, b"int", b"linglongamgDevice", str(args.device).encode())
+            data = set_parameter(data, b"string", b"linglongamgConfigFile", b'"./bin/linglongamg_config.json"')
+            data = set_parameter(data, b"string", b"linglongamgLogFile", b'"./results/linglongamg_pressure.csv"')
         path.write_bytes(data)
     except BaseException:
         rmtree(run)

@@ -11,7 +11,7 @@ void* Real()
 {
     static void* library = []() -> void*
     {
-        const char* path = std::getenv("LINGLONG_AUDIT_REAL_LIBRARY");
+        const char* path = std::getenv("LINGLONGAMG_AUDIT_REAL_LIBRARY");
         void* result = path ? dlopen(path, RTLD_NOW | RTLD_LOCAL) : nullptr;
         if (!result) { std::fprintf(stderr, "audit: real SDK load failed\n"); std::abort(); }
         return result;
@@ -26,9 +26,9 @@ template<class T> T Function(const char* name)
 }
 void Record(const char* event, const void* handle, int status)
 {
-    const char* path = std::getenv("LINGLONG_AUDIT_FILE");
+    const char* path = std::getenv("LINGLONGAMG_AUDIT_FILE");
     FILE* out = path ? std::fopen(path, "a") : nullptr;
-    if (!out) { std::fprintf(stderr, "audit: LINGLONG_AUDIT_FILE required\n"); std::abort(); }
+    if (!out) { std::fprintf(stderr, "audit: LINGLONGAMG_AUDIT_FILE required\n"); std::abort(); }
     std::fprintf(out, "%s %p %d\n", event, handle, status);
     std::fclose(out);
 }
@@ -66,7 +66,7 @@ linglongamg_status_t linglongamg_solve(linglongamg_handle_t solver, const linglo
 }
 linglongamg_status_t linglongamg_get_solve_info(linglongamg_handle_t solver, linglongamg_solve_info_t* info)
 {
-    const auto status = std::getenv("LINGLONG_AUDIT_DENY_QUERY")
+    const auto status = std::getenv("LINGLONGAMG_AUDIT_DENY_QUERY")
         ? LINGLONGAMG_STATUS_LICENSE_ERROR
         : Function<decltype(&linglongamg_get_solve_info)>("linglongamg_get_solve_info")(solver, info);
     Record("query", solver, status); return status;

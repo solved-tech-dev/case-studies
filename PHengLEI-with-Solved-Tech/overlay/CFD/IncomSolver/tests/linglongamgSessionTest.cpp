@@ -1,4 +1,4 @@
-#include "linglongSession.h"
+#include "linglongamgSession.h"
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -38,7 +38,7 @@ std::vector<double> Product(const AMGBenchmarkCSR& a, const std::vector<double>&
         for (int k = a.rows[i]; k < a.rows[i+1]; ++k) b[i] += a.values[k]*x[a.columns[k]];
     return b;
 }
-void Verify(LinglongSession& session, const AMGBenchmarkCSR& a, bool exactGuess, bool zero)
+void Verify(LinglongAMGSession& session, const AMGBenchmarkCSR& a, bool exactGuess, bool zero)
 {
     const int n = static_cast<int>(a.rows.size()-1);
     std::vector<double> expected(n), x(n, 0);
@@ -46,7 +46,7 @@ void Verify(LinglongSession& session, const AMGBenchmarkCSR& a, bool exactGuess,
     const std::vector<double> b = Product(a, expected);
     if (exactGuess) x = expected;
     if (zero && !exactGuess) std::fill(x.begin(), x.end(), 0.75);
-    const LinglongSessionReport r = session.Solve(a, b.data(), x.data());
+    const LinglongAMGSessionReport r = session.Solve(a, b.data(), x.data());
     if (!r.converged)
         std::cerr << "nonconverged call=" << r.call << " initial=" << r.initialL2
                   << " final=" << r.finalL2 << " sdk_relative=" << r.sdkRelativeResidual << '\n';
@@ -63,7 +63,7 @@ void Verify(LinglongSession& session, const AMGBenchmarkCSR& a, bool exactGuess,
 }
 void Audit(unsigned calls, bool denied)
 {
-    const char* path = std::getenv("LINGLONG_AUDIT_FILE");
+    const char* path = std::getenv("LINGLONGAMG_AUDIT_FILE");
     Require(path && *path, "audit file required for actual API count verification");
     std::ifstream input(path);
     Require(static_cast<bool>(input), "cannot read audit file");
@@ -91,11 +91,11 @@ int main(int argc, char** argv)
 {
     try
     {
-        Require(argc == 2 || argc == 3, "usage: linglong_session_test config.json [--deny-query]");
+        Require(argc == 2 || argc == 3, "usage: linglongamg_session_test config.json [--deny-query]");
         const bool denied = argc == 3 && std::string(argv[2]) == "--deny-query";
         unsigned calls = 0;
         {
-            LinglongSession session(argv[1], 0);
+            LinglongAMGSession session(argv[1], 0);
             std::cout << "GPU " << session.DeviceDescription() << '\n';
             if (denied)
             {
