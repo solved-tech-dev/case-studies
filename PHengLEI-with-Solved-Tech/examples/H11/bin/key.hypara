@@ -1,0 +1,6 @@
+int ndim=3;
+int nparafile=1;
+string defaultParaFile="./bin/cfd_para.hypara";
+int nsimutask=0;
+string parafilename="./bin/cfd_para_incompressible.hypara";
+int numberOfGridProcessor=0;
