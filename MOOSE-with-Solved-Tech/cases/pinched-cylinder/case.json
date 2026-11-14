@@ -1,0 +1,39 @@
+{
+  "scalar": "real64",
+  "solve": "general LU",
+  "profiles": [
+    "small",
+    "million"
+  ],
+  "case": "pinched-cylinder",
+  "input": "pinched_cylinder_symm.i",
+  "fields": [
+    "disp_x",
+    "disp_y",
+    "disp_z",
+    "rot_x",
+    "rot_y"
+  ],
+  "expected_output_times": [
+    0,
+    1
+  ],
+  "grids": {
+    "small": {
+      "factor": 1
+    },
+    "million": {
+      "factor": 45
+    }
+  },
+  "million_reference_shape": {
+    "rows": 1017005,
+    "stored_csr_entries": 45630025
+  },
+  "postprocessors": [
+    "disp_x1",
+    "disp_y1",
+    "disp_x2",
+    "disp_y2"
+  ]
+}

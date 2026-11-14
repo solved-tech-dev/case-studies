@@ -1,0 +1,37 @@
+{
+  "scalar": "real64",
+  "solve": "general LU",
+  "profiles": [
+    "small",
+    "million"
+  ],
+  "case": "thermomech",
+  "input": "thermomech_step01.i",
+  "fields": [
+    "T",
+    "disp_x",
+    "disp_y"
+  ],
+  "expected_output_times": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "grids": {
+    "small": {
+      "nx": 10,
+      "ny": 10
+    },
+    "million": {
+      "nx": 666,
+      "ny": 500
+    }
+  },
+  "million_reference_shape": {
+    "rows": 1002501,
+    "stored_csr_entries": 27004491
+  }
+}

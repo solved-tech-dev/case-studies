@@ -1,0 +1,29 @@
+{
+  "scalar": "real64",
+  "solve": "general LU",
+  "profiles": [
+    "small",
+    "million"
+  ],
+  "case": "mug",
+  "input": "ex01.i",
+  "fields": [
+    "diffused"
+  ],
+  "expected_output_times": [
+    0,
+    1
+  ],
+  "grids": {
+    "small": {
+      "refine": 0
+    },
+    "million": {
+      "refine": 3
+    }
+  },
+  "million_reference_shape": {
+    "rows": 1349545,
+    "stored_csr_entries": 34963705
+  }
+}

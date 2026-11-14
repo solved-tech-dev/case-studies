@@ -1,0 +1,29 @@
+{
+  "scalar": "real64",
+  "solve": "general LU",
+  "profiles": [
+    "small",
+    "million"
+  ],
+  "case": "hex20-heat",
+  "input": "heat_conduction_patch_hex20.i",
+  "fields": [
+    "temp"
+  ],
+  "expected_output_times": [
+    0,
+    1
+  ],
+  "grids": {
+    "small": {
+      "cells": 4
+    },
+    "million": {
+      "cells": 62
+    }
+  },
+  "million_reference_shape": {
+    "rows": 988281,
+    "stored_csr_entries": 56312245
+  }
+}

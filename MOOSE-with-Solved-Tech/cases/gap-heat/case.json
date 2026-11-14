@@ -1,0 +1,30 @@
+{
+  "scalar": "real64",
+  "solve": "general LU",
+  "profiles": [
+    "small",
+    "million"
+  ],
+  "case": "gap-heat",
+  "input": "meshed_gap_thermal_contact_constant_conductance.i",
+  "fields": [
+    "temp"
+  ],
+  "expected_output_times": [
+    0,
+    1
+  ],
+  "grids": {
+    "small": {
+      "factor": 4,
+      "nl_max_its": 100
+    },
+    "million": {
+      "factor": 70
+    }
+  },
+  "million_reference_shape": {
+    "rows": 982802,
+    "stored_csr_entries": 8828402
+  }
+}

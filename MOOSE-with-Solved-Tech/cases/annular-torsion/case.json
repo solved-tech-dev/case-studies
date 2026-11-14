@@ -1,0 +1,40 @@
+{
+  "scalar": "real64",
+  "solve": "general LU",
+  "profiles": [
+    "small",
+    "million"
+  ],
+  "case": "annular-torsion",
+  "input": "ad_torque_small.i",
+  "fields": [
+    "disp_x",
+    "disp_y",
+    "disp_z"
+  ],
+  "expected_output_times": [
+    0,
+    1
+  ],
+  "grids": {
+    "small": {
+      "nr": 1,
+      "nt": 30,
+      "layers": 5
+    },
+    "million": {
+      "nr": 16,
+      "nt": 352,
+      "layers": 55
+    }
+  },
+  "million_reference_shape": {
+    "rows": 1005312,
+    "stored_csr_entries": 77305536
+  },
+  "postprocessors": [
+    "alpha",
+    "pmi",
+    "shear_stress"
+  ]
+}

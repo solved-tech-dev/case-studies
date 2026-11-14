@@ -1,0 +1,51 @@
+{
+  "repository": "https://github.com/idaholab/moose.git",
+  "commit": "07b49de938ed357c136b487078065406d838aa26",
+  "files": [
+    {
+      "file": "cases/thermomech/upstream/thermomech_step01.i",
+      "upstream_path": "modules/combined/tutorials/introduction/thermal_mechanical/thermomech_step01.i",
+      "sha256": "fe30665a305737b5523512a8b58b1d758b0026409897e092ac6f1dce16a78793"
+    },
+    {
+      "file": "cases/annular-torsion/upstream/ad_torque_small.i",
+      "upstream_path": "modules/solid_mechanics/test/tests/torque/ad_torque_small.i",
+      "sha256": "78d3f939b5ef3cc2d319c1396772c859365a588edf1de5a06297fca0b60fbfbc"
+    },
+    {
+      "file": "cases/mug/upstream/ex01.i",
+      "upstream_path": "examples/ex01_inputfile/ex01.i",
+      "sha256": "e24a90dba135d52f30f2811aadd374f78ea6b0af3f91bb8c2800bfff6582890a"
+    },
+    {
+      "file": "cases/mug/upstream/mug.e",
+      "upstream_path": "examples/ex01_inputfile/mug.e",
+      "sha256": "1f83bd394b3d37032bb15c52a67fb9e1e66a3760e5474de62208568eb2ae56d6"
+    },
+    {
+      "file": "cases/pinched-cylinder/upstream/pinched_cylinder_symm.i",
+      "upstream_path": "modules/solid_mechanics/test/tests/shell/static/pinched_cylinder_symm.i",
+      "sha256": "220f4158c0d02bfee166e65c47b7528397bba1d933fc52b37019a94dfdcb07b3"
+    },
+    {
+      "file": "cases/pinched-cylinder/upstream/cyl_sym_10x10.e",
+      "upstream_path": "modules/solid_mechanics/test/tests/shell/static/cyl_sym_10x10.e",
+      "sha256": "285908864a35fea569d8414b5444007e4a57044dc5cf2a073aac95d35976f31d"
+    },
+    {
+      "file": "cases/gap-heat/upstream/meshed_gap_thermal_contact_constant_conductance.i",
+      "upstream_path": "modules/heat_transfer/test/tests/meshed_gap_thermal_contact/meshed_gap_thermal_contact_constant_conductance.i",
+      "sha256": "007b38143bd1269578c4bbe10d07e9ada830f11263c6f4591280008622f414b3"
+    },
+    {
+      "file": "cases/gap-heat/upstream/meshed_gap.e",
+      "upstream_path": "modules/heat_transfer/test/tests/meshed_gap_thermal_contact/meshed_gap.e",
+      "sha256": "491ed83e853b9a486a8acc3ea9f911e66eb5dedfce865d54d337f56ae0311b72"
+    },
+    {
+      "file": "cases/hex20-heat/upstream/heat_conduction_patch_hex20.i",
+      "upstream_path": "modules/heat_transfer/test/tests/heat_conduction_patch/heat_conduction_patch_hex20.i",
+      "sha256": "36f1c75a90e87c421be8bc66d5ab44b27929ac070a7dd4ffa8acdd2578d2c766"
+    }
+  ]
+}
