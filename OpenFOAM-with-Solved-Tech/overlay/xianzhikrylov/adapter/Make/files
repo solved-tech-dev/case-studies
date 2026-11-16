@@ -1,0 +1,4 @@
+BenchLinear.C
+BenchSmoothSolver.C
+
+LIB = $(BENCH_GPU_ROOT)/lib/libBenchLinear

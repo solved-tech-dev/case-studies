@@ -1,0 +1,15 @@
+{
+  "schema_version": 2,
+  "matrix_format": "csr",
+  "matrix_symmetry": "general",
+  "block_size": 1,
+  "solver": {
+    "method": "bicgstab",
+    "preconditioner": "ilu0",
+    "level": 0,
+    "max_iterations": 2000,
+    "relative_tolerance": 1e-09,
+    "absolute_tolerance": 1e-30,
+    "initial_guess": "provided"
+  }
+}

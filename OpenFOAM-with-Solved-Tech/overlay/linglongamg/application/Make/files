@@ -1,0 +1,3 @@
+timedSimpleFoam.C
+
+EXE = $(FOAM_PRESSURE_ROOT)/bin/timedSimpleFoam

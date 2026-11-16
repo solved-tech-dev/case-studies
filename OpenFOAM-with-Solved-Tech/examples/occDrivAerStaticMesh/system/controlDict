@@ -1,0 +1,24 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+application     simpleFoam;
+startFrom       startTime;
+startTime       0;
+stopAt          endTime;
+endTime         5;
+deltaT          1;
+writeControl    timeStep;
+writeInterval   1000000000;
+purgeWrite      0;
+writeFormat     binary;
+writePrecision  16;
+writeCompression off;
+timeFormat      general;
+timePrecision   7;
+runTimeModifiable no;
+libs ("libdistributed.so" "libturbulenceModelSchemes.so");
+functions {}

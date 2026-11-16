@@ -1,0 +1,7 @@
+/work/
+/mesh-download/
+**/polyMesh/
+*.so
+*.key
+*.receipt
+__pycache__/
