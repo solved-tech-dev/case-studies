@@ -1,6 +1,6 @@
-# OpenFOAM v2412 接入玲珑 AMG 和先知 Krylov
+# OpenFOAM v2412 接入 LinglongAMG 和 XianzhiKrylov
 
-本包使用 `occDrivAerStaticMesh` 的 65M 单元网格，在同一份初始流场上分别运行两套配置。玲珑 AMG 求解压力方程 `p`。先知 Krylov 求解 `Ux`、`Uy`、`Uz`、`k` 和 `omega`，压力方程仍由 OpenFOAM 的 GAMG 求解。
+本包使用 `occDrivAerStaticMesh` 的 65M 单元网格，在同一份初始流场上分别运行两套配置。LinglongAMG 求解压力方程 `p`。XianzhiKrylov 求解 `Ux`、`Uy`、`Uz`、`k` 和 `omega`，压力方程仍由 OpenFOAM 的 GAMG 求解。
 
 | 目录 | 内容 |
 | --- | --- |
@@ -12,7 +12,7 @@
 
 - Linux、OpenFOAM v2412 的双精度 32 位索引构建（`DPInt32`）、`wmake`、Open MPI 和 Python 3。编译适配层时使用与 OpenFOAM 一致的编译器和 MPI。
 - CUDA 工具包、支持所用 SDK 的 NVIDIA 驱动和一块 GPU。两条路线各自用 20 个 MPI 进程，均由第 0 个进程调用 GPU。为 65M 网格准备足够的主机内存、显存和磁盘空间。
-- 通过 SDK 交付渠道获取匹配的安装包及当前 GPU 的授权。玲珑目录下需要 `lib/liblinglongamg.so` 和 `linglongamg.h`。先知需要 26.46 头文件和匹配的动态库，动态库须导出 `xk_bench_set_tolerances` 与 `xk_internal_get_last_stats`，构建脚本会检查这两个符号。
+- 通过 SDK 交付渠道获取匹配的安装包及当前 GPU 的授权。LinglongAMG 目录下需要 `lib/liblinglongamg.so` 和 `linglongamg.h`。XianzhiKrylov 需要 26.46 头文件和匹配的动态库，动态库须导出 `xk_bench_set_tolerances` 与 `xk_internal_get_last_stats`，构建脚本会检查这两个符号。
 
 在包根目录执行以下命令。将路径替换为实际安装位置。
 
@@ -52,7 +52,7 @@ bash scripts/prepare-case.sh /path/to/polyMesh work/occ-prepared
 
 脚本按 `5 × 2 × 2` 分区并重排网格，用 `potentialFoam` 初始化流场，再用 `applyBoundaryLayer` 初始化边界层。两次运行都会读取这个目录下的同一份网格和初场。
 
-如果已有按相同网格和分区准备好的输入，可以向算例提供方取得 `constant/` 及 `processor0/` 至 `processor19/` 下的 `0/`、`constant/polyMesh/`，并直接指定该输入目录。可选的玲珑行排列文件 `processor0.bin` 至 `processor19.bin` 也由算例提供方另行提供。已有对应文件时可设置 `LINGLONGAMG_ORDERING_DIR`，文件必须与所用的 20 个分区一一匹配。
+如果已有按相同网格和分区准备好的输入，可以向算例提供方取得 `constant/` 及 `processor0/` 至 `processor19/` 下的 `0/`、`constant/polyMesh/`，并直接指定该输入目录。可选的 LinglongAMG 行排列文件 `processor0.bin` 至 `processor19.bin` 也由算例提供方另行提供。已有对应文件时可设置 `LINGLONGAMG_ORDERING_DIR`，文件必须与所用的 20 个分区一一匹配。
 
 ## 分别运行
 
