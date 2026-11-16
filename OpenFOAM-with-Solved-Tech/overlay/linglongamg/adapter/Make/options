@@ -1,0 +1,10 @@
+EXE_INC = \
+    $(SOLVED_MPI_CFLAGS) \
+    -I$(LINGLONGAMG_INCLUDE_DIR) \
+    -I$(CUDA_INCLUDE_DIR)
+
+LIB_LIBS = \
+    -lOpenFOAM \
+    $(SOLVED_MPI_LIBS) \
+    -L$(LINGLONGAMG_SDK)/lib -llinglongamg \
+    -L$(CUDA_LIB_DIR) -lcudart

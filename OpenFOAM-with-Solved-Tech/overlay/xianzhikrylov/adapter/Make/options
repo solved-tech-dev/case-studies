@@ -1,0 +1,8 @@
+EXE_INC = \
+    -I$(XIANZHIKRYLOV_SDK)/include \
+    $(SOLVED_MPI_CFLAGS)
+
+LIB_LIBS = \
+    -lOpenFOAM \
+    $(SOLVED_MPI_LIBS) \
+    -L$(XIANZHIKRYLOV_LIB_DIR) -lXianzhiKrylov
