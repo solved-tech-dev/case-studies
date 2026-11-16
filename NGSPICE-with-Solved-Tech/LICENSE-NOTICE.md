@@ -2,7 +2,7 @@
 
 The ngspice source is obtained separately from the revision in [upstream.lock.json](upstream.lock.json). The project and the files shown as patch context retain their upstream copyright and licenses. See [ngspice-COPYING](licenses/ngspice-COPYING) and the [ngspice developer licensing notes](https://ngspice.sourceforge.io/devel.html).
 
-Solved Tech's capture hook and the new lines in its patch under `integration/ngspice/` use [BSD-3-Clause](licenses/BSD-3-Clause.txt). The separate PanguLU replay driver, synthetic netlist generator, case profiles, tools, documentation and published benchmark data use [AGPL-3.0-only](LICENSE), following the other Solved Tech case packages.
+Solved Tech's capture hook and the new lines in its patch under `integration/ngspice/` use [BSD-3-Clause](licenses/BSD-3-Clause.txt). The separate PanguLU replay driver, synthetic netlist generator, case profiles, tools, documentation and capture validation records use [AGPL-3.0-only](LICENSE), following the other Solved Tech case packages.
 
 The SDK, CUDA libraries and GPU license are obtained separately. See [Solved Tech](https://solved-tech.com/) for PanguLU SDK and device licensing.
 

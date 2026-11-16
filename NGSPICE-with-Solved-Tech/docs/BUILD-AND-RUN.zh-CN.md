@@ -37,4 +37,4 @@ CUDA_VISIBLE_DEVICES=0 python3 tools/run_case.py replay "$case_id" \
 
 原测试的 GPU 作业分配 40 个主机 CPU，PanguLU 的主机 OpenMP 线程数设为 1。程序使用当前可见的 CUDA 设备。`pangulu.log` 记录设备、同步后的求解器阶段和逐次校验。`result.json` 在三次求解全部校验通过后生成，分别报告求解器阶段累计耗时与回放进程总耗时。
 
-在新的网表目录用 `python3 tools/generate_cases.py all --output-dir netlists` 生成五个完整网表。随后按[案例说明](../cases/README.zh-CN.md)中的 ID 逐一采集和回放。采集与回放可分开在 CPU 和 GPU 机器上进行，转移数据时请保留完整的采集目录。计时范围见[测试说明](../results/README.zh-CN.md)。
+在新的网表目录用 `python3 tools/generate_cases.py all --output-dir netlists` 生成五个完整网表。随后按[案例说明](../cases/README.zh-CN.md)中的 ID 逐一采集和回放。采集与回放可分开在 CPU 和 GPU 机器上进行，转移数据时请保留完整的采集目录。参考解核对记录见[原生方程采集验证](../validation/README.zh-CN.md)。

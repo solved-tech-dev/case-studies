@@ -17,5 +17,5 @@ ngspice 根据网表组装方程，用原生 KLU 完成工作点计算。采集�
 - [构建与运行](docs/BUILD-AND-RUN.zh-CN.md)
 - [方程采集与求解器接入入口](docs/INTEGRATION.zh-CN.md)
 - [案例说明与原始输入](cases/README.zh-CN.md)
-- [测试方法与公开数据](results/README.zh-CN.md)
+- [原生方程采集验证](validation/README.zh-CN.md)
 - [许可与来源](LICENSE-NOTICE.md)

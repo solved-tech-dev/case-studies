@@ -17,5 +17,5 @@ ngspice assembles the circuit equations and completes its native KLU operating-p
 - [Build and run](docs/BUILD-AND-RUN.md)
 - [Capture hook and solver entry points](docs/INTEGRATION.md)
 - [Circuit descriptions and original inputs](cases/README.md)
-- [Benchmark method and data](results/README.md)
+- [Native capture validation](validation/README.md)
 - [Licenses and attribution](LICENSE-NOTICE.md)

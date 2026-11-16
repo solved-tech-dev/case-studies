@@ -18,7 +18,6 @@
       ],
       "capture": {
         "case": "pdn-interleaved-segments-dc",
-        "wall_s": 20.268257336691022,
         "calls": [
           {
             "call": 1,
@@ -64,7 +63,6 @@
       ],
       "capture": {
         "case": "pdn-diagonal-straps-dc",
-        "wall_s": 68.10782269295305,
         "calls": [
           {
             "call": 1,
@@ -110,7 +108,6 @@
       ],
       "capture": {
         "case": "pdn-slotted-plane-dc",
-        "wall_s": 21.486570257227868,
         "calls": [
           {
             "call": 1,
@@ -156,7 +153,6 @@
       ],
       "capture": {
         "case": "pdn-dual-rail-resistive-dc",
-        "wall_s": 144.96332002663985,
         "calls": [
           {
             "call": 1,
@@ -202,7 +198,6 @@
       ],
       "capture": {
         "case": "pdn-bus-straps-dc",
-        "wall_s": 29.23226049216464,
         "calls": [
           {
             "call": 1,
