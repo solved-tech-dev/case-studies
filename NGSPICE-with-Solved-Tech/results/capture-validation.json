@@ -1,0 +1,236 @@
+{
+  "upstream_commit": "724dc77b9153dc75eaec474b1f7a44f1fcf5f362",
+  "validation": "Full native operating-point runs from the release build",
+  "cases": [
+    {
+      "case": "pdn-interleaved-segments-dc",
+      "verified_netlist_sha256": "d827d25f15b5607f7e04c2de604e7b1d1d811f69473a4f8adf04dc9c6f78befb",
+      "identical_to_benchmark_capture": [
+        "call-0001.a.f64",
+        "call-0001.b.f64",
+        "call-0001.ci.i32",
+        "call-0001.rp.i64",
+        "call-0001.x.f64",
+        "call-0002.b.f64",
+        "call-0002.x.f64",
+        "call-0003.b.f64",
+        "call-0003.x.f64"
+      ],
+      "capture": {
+        "case": "pdn-interleaved-segments-dc",
+        "wall_s": 20.268257336691022,
+        "calls": [
+          {
+            "call": 1,
+            "matrix_order": 1008002,
+            "csr_entries": 3792813,
+            "graph_from": 1,
+            "coefficients_from": 1,
+            "klu_residual": 8.957870047611233e-11
+          },
+          {
+            "call": 2,
+            "matrix_order": 1008002,
+            "csr_entries": 3792813,
+            "graph_from": 1,
+            "coefficients_from": 1,
+            "klu_residual": 8.957870047611233e-11
+          },
+          {
+            "call": 3,
+            "matrix_order": 1008002,
+            "csr_entries": 3792813,
+            "graph_from": 1,
+            "coefficients_from": 1,
+            "klu_residual": 8.957870047611233e-11
+          }
+        ]
+      },
+      "physical_plot_identical_to_benchmark": true
+    },
+    {
+      "case": "pdn-diagonal-straps-dc",
+      "verified_netlist_sha256": "65f042f852eafd14e74da759265fb25ba3790b253a318c896f7b9532f1fd8193",
+      "identical_to_benchmark_capture": [
+        "call-0001.a.f64",
+        "call-0001.b.f64",
+        "call-0001.ci.i32",
+        "call-0001.rp.i64",
+        "call-0001.x.f64",
+        "call-0002.b.f64",
+        "call-0002.x.f64",
+        "call-0003.b.f64",
+        "call-0003.x.f64"
+      ],
+      "capture": {
+        "case": "pdn-diagonal-straps-dc",
+        "wall_s": 68.10782269295305,
+        "calls": [
+          {
+            "call": 1,
+            "matrix_order": 1001002,
+            "csr_entries": 4320777,
+            "graph_from": 1,
+            "coefficients_from": 1,
+            "klu_residual": 1.747283962670348e-11
+          },
+          {
+            "call": 2,
+            "matrix_order": 1001002,
+            "csr_entries": 4320777,
+            "graph_from": 1,
+            "coefficients_from": 1,
+            "klu_residual": 1.747283962670348e-11
+          },
+          {
+            "call": 3,
+            "matrix_order": 1001002,
+            "csr_entries": 4320777,
+            "graph_from": 1,
+            "coefficients_from": 1,
+            "klu_residual": 1.747283962670348e-11
+          }
+        ]
+      },
+      "physical_plot_identical_to_benchmark": true
+    },
+    {
+      "case": "pdn-slotted-plane-dc",
+      "verified_netlist_sha256": "42b400affb0fae65f71df93525f951a7159ebef04ada35eec386ec35eed9a916",
+      "identical_to_benchmark_capture": [
+        "call-0001.a.f64",
+        "call-0001.b.f64",
+        "call-0001.ci.i32",
+        "call-0001.rp.i64",
+        "call-0001.x.f64",
+        "call-0002.b.f64",
+        "call-0002.x.f64",
+        "call-0003.b.f64",
+        "call-0003.x.f64"
+      ],
+      "capture": {
+        "case": "pdn-slotted-plane-dc",
+        "wall_s": 21.486570257227868,
+        "calls": [
+          {
+            "call": 1,
+            "matrix_order": 1008002,
+            "csr_entries": 3973723,
+            "graph_from": 1,
+            "coefficients_from": 1,
+            "klu_residual": 1.1542453158746074e-11
+          },
+          {
+            "call": 2,
+            "matrix_order": 1008002,
+            "csr_entries": 3973723,
+            "graph_from": 1,
+            "coefficients_from": 1,
+            "klu_residual": 1.1542453158746074e-11
+          },
+          {
+            "call": 3,
+            "matrix_order": 1008002,
+            "csr_entries": 3973723,
+            "graph_from": 1,
+            "coefficients_from": 1,
+            "klu_residual": 1.1542453158746074e-11
+          }
+        ]
+      },
+      "physical_plot_identical_to_benchmark": true
+    },
+    {
+      "case": "pdn-dual-rail-resistive-dc",
+      "verified_netlist_sha256": "aa980ca5f30d2d1c9dfd7fab27716c746362854f0f6fe96ac23424883ba76a95",
+      "identical_to_benchmark_capture": [
+        "call-0001.a.f64",
+        "call-0001.b.f64",
+        "call-0001.ci.i32",
+        "call-0001.rp.i64",
+        "call-0001.x.f64",
+        "call-0002.b.f64",
+        "call-0002.x.f64",
+        "call-0003.b.f64",
+        "call-0003.x.f64"
+      ],
+      "capture": {
+        "case": "pdn-dual-rail-resistive-dc",
+        "wall_s": 144.96332002663985,
+        "calls": [
+          {
+            "call": 1,
+            "matrix_order": 1000002,
+            "csr_entries": 4837391,
+            "graph_from": 1,
+            "coefficients_from": 1,
+            "klu_residual": 1.414935948863508e-10
+          },
+          {
+            "call": 2,
+            "matrix_order": 1000002,
+            "csr_entries": 4837391,
+            "graph_from": 1,
+            "coefficients_from": 1,
+            "klu_residual": 1.414935948863508e-10
+          },
+          {
+            "call": 3,
+            "matrix_order": 1000002,
+            "csr_entries": 4837391,
+            "graph_from": 1,
+            "coefficients_from": 1,
+            "klu_residual": 1.414935948863508e-10
+          }
+        ]
+      },
+      "physical_plot_identical_to_benchmark": true
+    },
+    {
+      "case": "pdn-bus-straps-dc",
+      "verified_netlist_sha256": "ab09950b05dd11277735a5294d60e5c7997324341bd9019bfe9b3ca917ca5460",
+      "identical_to_benchmark_capture": [
+        "call-0001.a.f64",
+        "call-0001.b.f64",
+        "call-0001.ci.i32",
+        "call-0001.rp.i64",
+        "call-0001.x.f64",
+        "call-0002.b.f64",
+        "call-0002.x.f64",
+        "call-0003.b.f64",
+        "call-0003.x.f64"
+      ],
+      "capture": {
+        "case": "pdn-bus-straps-dc",
+        "wall_s": 29.23226049216464,
+        "calls": [
+          {
+            "call": 1,
+            "matrix_order": 1000002,
+            "csr_entries": 3653469,
+            "graph_from": 1,
+            "coefficients_from": 1,
+            "klu_residual": 1.1968785527748622e-11
+          },
+          {
+            "call": 2,
+            "matrix_order": 1000002,
+            "csr_entries": 3653469,
+            "graph_from": 1,
+            "coefficients_from": 1,
+            "klu_residual": 1.1968785527748622e-11
+          },
+          {
+            "call": 3,
+            "matrix_order": 1000002,
+            "csr_entries": 3653469,
+            "graph_from": 1,
+            "coefficients_from": 1,
+            "klu_residual": 1.1968785527748622e-11
+          }
+        ]
+      },
+      "physical_plot_identical_to_benchmark": true
+    }
+  ]
+}
