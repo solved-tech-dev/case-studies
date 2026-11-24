@@ -1,0 +1,3 @@
+rawResident.C
+
+EXE = $(RESIDENT_BUILD)/bin/rawResident

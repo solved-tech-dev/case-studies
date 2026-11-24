@@ -1,0 +1,16 @@
+EXE_INC = \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -I$(PREPARATION_SDK)/include \
+    -I$(XIANZHIKRYLOV_SDK)/include \
+    -I$(RESIDENT_CUDA)/include \
+    $(RESIDENT_MPI_CFLAGS)
+
+EXE_LIBS = \
+    -lfiniteVolume \
+    -lmeshTools \
+    -L$(PREPARATION_SDK)/lib -lLinearSystemPreparation \
+    -L$(XIANZHIKRYLOV_SDK)/lib -lXianzhiKrylov \
+    -Wl,--allow-shlib-undefined \
+    -L$(RESIDENT_CUDA)/lib64 -lcudart \
+    $(RESIDENT_MPI_LIBS)
