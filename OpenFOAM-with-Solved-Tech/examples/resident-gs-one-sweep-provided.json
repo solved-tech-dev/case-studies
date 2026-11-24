@@ -1,0 +1,11 @@
+{
+  "schema_version": 2,
+  "solver": {
+    "method": "smooth",
+    "smoother": "gauss_seidel",
+    "stopping": "fixed_sweeps",
+    "preconditioner": "none",
+    "max_iterations": 1,
+    "initial_guess": "provided"
+  }
+}

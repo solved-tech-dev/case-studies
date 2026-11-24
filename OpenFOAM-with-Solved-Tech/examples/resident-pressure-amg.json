@@ -1,0 +1,11 @@
+{
+  "extended_solver": {
+    "method": "bicgstab_amg",
+    "provider": "linglongamg",
+    "library_path": "",
+    "config_path": "",
+    "inner_method": "none",
+    "max_iterations": 20000,
+    "relative_tolerance": 1e-12
+  }
+}

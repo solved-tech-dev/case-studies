@@ -1,0 +1,15 @@
+{
+  "sdk": "XianzhiKrylov-26.47-resident-r1",
+  "preparation_source_commit": "7c9a616b7b3800765a48ace0171de19aabc99cdc",
+  "core_source_commit": "b39ea72a3c84bc94b93ad3f3d06023be65119750",
+  "openfoam": "v2412 DPInt32",
+  "cuda": "13.1",
+  "target": "NVIDIA A100 SM80",
+  "external_dependencies": {
+    "preparation/lib/libLinearSystemPreparation.so.26.47.0": "4739a5c5ae8a5085d471ade2ab678dd0ff649f0296b1739ade6daa60c6c9f541",
+    "core/lib/libXianzhiKrylov.so.26.47.0": "27ac8125466b45016722c1f98823312b18b936bc3178a53cae4a48a09a0a1c7a",
+    "preparation/include/XianzhiPreparation2647.hpp": "0acc25d1d319cb3b8aeb48048511eec2cd487c1ca706c290fb2ee52bbbb7b914"
+  },
+  "sdk_binaries_included": false,
+  "licenses_included": false
+}
