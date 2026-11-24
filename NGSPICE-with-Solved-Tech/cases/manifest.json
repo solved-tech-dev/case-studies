@@ -1,0 +1,77 @@
+{
+  "cases": {
+    "pdn-interleaved-segments-dc": {
+      "label_en": "Interleaved feeders",
+      "label_zh": "交错分段馈电网",
+      "grid": [
+        1120,
+        900
+      ],
+      "topology": "interleaved",
+      "netlist_sha256": "d827d25f15b5607f7e04c2de604e7b1d1d811f69473a4f8adf04dc9c6f78befb",
+      "matrix_order": 1008002,
+      "csr_entries": 3792813,
+      "calls": 3,
+      "tile": [
+        32,
+        30
+      ]
+    },
+    "pdn-diagonal-straps-dc": {
+      "label_en": "Diagonal straps",
+      "label_zh": "斜向联络母线",
+      "grid": [
+        1100,
+        910
+      ],
+      "topology": "diagonal",
+      "netlist_sha256": "65f042f852eafd14e74da759265fb25ba3790b253a318c896f7b9532f1fd8193",
+      "matrix_order": 1001002,
+      "csr_entries": 4320777,
+      "calls": 3
+    },
+    "pdn-slotted-plane-dc": {
+      "label_en": "Slotted power plane",
+      "label_zh": "开槽电源平面",
+      "grid": [
+        1200,
+        840
+      ],
+      "topology": "slotted",
+      "netlist_sha256": "42b400affb0fae65f71df93525f951a7159ebef04ada35eec386ec35eed9a916",
+      "matrix_order": 1008002,
+      "csr_entries": 3973723,
+      "calls": 3,
+      "tile": [
+        48,
+        36
+      ]
+    },
+    "pdn-dual-rail-resistive-dc": {
+      "label_en": "Dual power rails",
+      "label_zh": "双电源轨",
+      "grid": [
+        1000,
+        500
+      ],
+      "topology": "dual-rail",
+      "netlist_sha256": "aa980ca5f30d2d1c9dfd7fab27716c746362854f0f6fe96ac23424883ba76a95",
+      "matrix_order": 1000002,
+      "csr_entries": 4837391,
+      "calls": 3
+    },
+    "pdn-bus-straps-dc": {
+      "label_en": "Bus-strap network",
+      "label_zh": "母线馈电网",
+      "grid": [
+        1250,
+        800
+      ],
+      "topology": "bus",
+      "netlist_sha256": "ab09950b05dd11277735a5294d60e5c7997324341bd9019bfe9b3ca917ca5460",
+      "matrix_order": 1000002,
+      "csr_entries": 3653469,
+      "calls": 3
+    }
+  }
+}

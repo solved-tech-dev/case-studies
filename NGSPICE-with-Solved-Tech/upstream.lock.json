@@ -1,0 +1,7 @@
+{
+  "project": "ngspice",
+  "upstream": "https://sourceforge.net/p/ngspice/ngspice/ci/master/tree/",
+  "repository": "https://github.com/imr/ngspice.git",
+  "tag": "ngspice-45.2",
+  "commit": "724dc77b9153dc75eaec474b1f7a44f1fcf5f362"
+}

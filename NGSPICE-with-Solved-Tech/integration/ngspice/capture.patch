@@ -1,0 +1,45 @@
+diff --git a/src/maths/ni/Makefile.am b/src/maths/ni/Makefile.am
+index a6fb60f..fef3892 100644
+--- a/src/maths/ni/Makefile.am
++++ b/src/maths/ni/Makefile.am
+@@ -18,6 +18,10 @@ libni_la_SOURCES = \
+ 		nisenre.c
+ 
+ 
++if KLU_WANTED
++libni_la_SOURCES += solvedtech-capture.c
++endif
++
+ AM_CPPFLAGS = @AM_CPPFLAGS@ -I$(top_srcdir)/src/include
+ AM_CFLAGS = $(STATIC)
+ 
+diff --git a/src/maths/ni/niiter.c b/src/maths/ni/niiter.c
+index 85da8ec..7718e2a 100644
+--- a/src/maths/ni/niiter.c
++++ b/src/maths/ni/niiter.c
+@@ -20,6 +20,10 @@ Modified: 2001 AlansFixes
+ #include "ngspice/sperror.h"
+ #include "ngspice/fteext.h"
+ 
++#ifdef KLU
++void SolvedTechCaptureSolve(CKTcircuit *ckt, const char *directory);
++#endif
++
+ /* Limit the number of 'singular matrix' warnings */
+ static int msgcount = 0;
+ 
+@@ -251,7 +255,13 @@ NIiter(CKTcircuit *ckt, int maxIter)
+                        (size_t) ckt->CKTnumStates * sizeof(double));
+ 
+             startTime = SPfrontEnd->IFseconds();
+-            SMPsolve(ckt->CKTmatrix, ckt->CKTrhs, ckt->CKTrhsSpare);
++#ifdef KLU
++            const char *capture_dir = getenv("NGSPICE_CAPTURE");
++            if (capture_dir && *capture_dir)
++                SolvedTechCaptureSolve(ckt, capture_dir);
++            else
++#endif
++                SMPsolve(ckt->CKTmatrix, ckt->CKTrhs, ckt->CKTrhsSpare);
+             ckt->CKTstat->STATsolveTime +=
+                 SPfrontEnd->IFseconds() - startTime;
+ #ifdef STEPDEBUG

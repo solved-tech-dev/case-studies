@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Source after loading the compiler, MPI and other Code_Saturne dependencies.
+: "${CS_PREFIX:?Set CS_PREFIX to the patched Code_Saturne installation}"
+: "${HYPRE_ROOT:?Set HYPRE_ROOT to the same host HYPRE installation used by Code_Saturne}"
+: "${LINGLONGAMG_ROOT:?Set LINGLONGAMG_ROOT to the LinglongAMG SDK}"
+: "${CUDA_HOME:?Set CUDA_HOME to the CUDA Toolkit installation}"
+
+CS_LINGLONGAMG_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+CS_LINGLONGAMG_BUILD=${CS_LINGLONGAMG_BUILD:-$CS_LINGLONGAMG_DIR/build}
+CS_LINGLONGAMG_LIBPATH=$CS_LINGLONGAMG_BUILD/linglongamg/lib:$CS_PREFIX/lib:$CUDA_HOME/lib64:$HYPRE_ROOT/lib
+if [[ -n ${MPI_HOME:-} ]]; then
+  CS_LINGLONGAMG_LIBPATH+=:$MPI_HOME/lib
+fi
+if [[ -n ${CS_LINGLONGAMG_GCC_RUNTIME:-} ]]; then
+  CS_LINGLONGAMG_LIBPATH+=:$CS_LINGLONGAMG_GCC_RUNTIME
+fi
+CS_LINGLONGAMG_LIBPATH+=${CS_LINGLONGAMG_DEP_LIBPATH:+:$CS_LINGLONGAMG_DEP_LIBPATH}
+
+export CS_PREFIX HYPRE_ROOT LINGLONGAMG_ROOT CUDA_HOME CS_LINGLONGAMG_BUILD
+export LD_LIBRARY_PATH=$CS_LINGLONGAMG_LIBPATH${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+export CS_LINGLONGAMG_CONFIG=${CS_LINGLONGAMG_CONFIG:-$CS_LINGLONGAMG_DIR/examples/linglongamg.json}
+export CS_LINGLONGAMG_ADAPTER_LIBRARY=$CS_LINGLONGAMG_BUILD/libcs_linglongamg_adapter.so
