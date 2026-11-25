@@ -1,0 +1,27 @@
+{
+  "case": "conrod",
+  "basename": "conrod",
+  "nodes": 333340,
+  "elements": 226614,
+  "equations": 1000020,
+  "calls": 1,
+  "mesh_sha256": "51205cc9e6639ef04f77e481837b9375d80e4e1133d093bac6cb6002f172ad0b",
+  "final_result": "fstrRES/STEP1/conrod.res.0.1",
+  "fields": [
+    {
+      "name": "DISPLACEMENT",
+      "width": 3,
+      "reference_l2": 249.01275648240588
+    },
+    {
+      "name": "NodalSTRESS",
+      "width": 6,
+      "reference_l2": 427485599.685316
+    },
+    {
+      "name": "NodalMISES",
+      "width": 1,
+      "reference_l2": 424102726.93566287
+    }
+  ]
+}

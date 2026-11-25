@@ -1,0 +1,8 @@
+!MESH, NAME=fstrMSH, TYPE=HECMW-ENTIRE
+ hinge.msh
+!CONTROL, NAME=fstrCNT
+ hinge.cnt
+!RESULT, NAME=fstrRES, IO=OUT
+ hinge.res
+!RESULT, NAME=vis_out, IO=OUT
+ hinge_vis

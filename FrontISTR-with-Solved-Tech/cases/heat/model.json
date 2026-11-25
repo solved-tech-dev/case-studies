@@ -1,0 +1,17 @@
+{
+  "case": "heat",
+  "basename": "block",
+  "nodes": 914550,
+  "elements": 868320,
+  "equations": 914550,
+  "calls": 6,
+  "mesh_sha256": "aab8c74647ced6cd586298e0fcbb26bf099bf362b02b67dcc070a7fb75b27862",
+  "final_result": "block.res.0.1",
+  "fields": [
+    {
+      "name": "TEMPERATURE",
+      "width": 1,
+      "reference_l2": 55742.02440104043
+    }
+  ]
+}

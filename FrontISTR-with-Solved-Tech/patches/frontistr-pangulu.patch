@@ -1,0 +1,85 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 2133150..83ecc43 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -326,6 +326,15 @@ if(WITH_MUMPS)
+   endif()
+ endif()
+ 
++set(FRONTISTR_PANGULU_BRIDGE "" CACHE FILEPATH "PanguLU adapter shared library")
++if(FRONTISTR_PANGULU_BRIDGE)
++  if(NOT WITH_MUMPS OR NOT EXISTS "${FRONTISTR_PANGULU_BRIDGE}")
++    message(FATAL_ERROR "PanguLU requires WITH_MUMPS and a built adapter library")
++  endif()
++  add_definitions(-DFRONTISTR_WITH_PANGULU)
++  list(APPEND FrontISTR_LIBRARIES "${FRONTISTR_PANGULU_BRIDGE}")
++endif()
++
+ ###################
+ # -DWITH_PARMETIS
+ ###################
+diff --git a/hecmw1/src/solver/mumps/hecmw_MUMPS_wrapper.F90 b/hecmw1/src/solver/mumps/hecmw_MUMPS_wrapper.F90
+index 3473cb8..f275415 100644
+--- a/hecmw1/src/solver/mumps/hecmw_MUMPS_wrapper.F90
++++ b/hecmw1/src/solver/mumps/hecmw_MUMPS_wrapper.F90
+@@ -30,6 +30,15 @@ contains
+ #ifdef HECMW_WITH_MUMPS
+     integer(kind=kint) :: ierr,myrank
+ 
++#ifdef FRONTISTR_WITH_PANGULU
++    character(len=32) :: backend
++    integer :: env_status
++    call get_environment_variable('FRONTISTR_SOLVER', backend, status=env_status)
++    if (env_status == 0 .and. trim(backend) == 'pangulu') then
++      call solve_with_pangulu(spMAT, job, istat)
++      return
++    endif
++#endif
+     myrank=hecmw_comm_get_rank()
+ 
+     if (spMAT%type /= SPARSE_MATRIX_TYPE_COO) then
+@@ -128,6 +137,44 @@ contains
+   end subroutine hecmw_mumps_wrapper
+ 
+ #ifdef HECMW_WITH_MUMPS
++#ifdef FRONTISTR_WITH_PANGULU
++  subroutine solve_with_pangulu(spMAT, job, istat)
++    use, intrinsic :: iso_c_binding, only: c_int, c_int32_t, c_int64_t, c_double
++    type(sparse_matrix), intent(inout) :: spMAT
++    integer(kind=kint), intent(in) :: job
++    integer(kind=kint), intent(out) :: istat
++    integer(c_int32_t) :: triangle
++    real(c_double), allocatable :: solution(:)
++    interface
++      integer(c_int) function asb_solve_coo_i32(n, nz, row, col, a, b, x, triangle) bind(C)
++        import c_int, c_int32_t, c_int64_t, c_double
++        integer(c_int64_t), intent(in) :: n, nz
++        integer(c_int32_t), intent(in) :: row(*), col(*), triangle
++        real(c_double), intent(in) :: a(*), b(*)
++        real(c_double), intent(out) :: x(*)
++      end function
++    end interface
++
++    istat = 0
++    if (hecmw_comm_get_size() /= 1) then
++      write(*,*) 'The PanguLU adapter requires one MPI rank'
++      call hecmw_abort(hecmw_comm_get_comm())
++    endif
++    ! Analysis and factorization are deferred until the assembled solve.
++    if (job /= 3 .and. job /= 5 .and. job /= 6) return
++    if (spMAT%type /= SPARSE_MATRIX_TYPE_COO .or. spMAT%N_loc /= spMAT%N) then
++      call hecmw_abort(hecmw_comm_get_comm())
++    endif
++    triangle = merge(1_c_int32_t, 0_c_int32_t, spMAT%symtype == SPARSE_MATRIX_SYMTYPE_SPD .or. &
++                                              spMAT%symtype == SPARSE_MATRIX_SYMTYPE_SYM)
++    allocate(solution(spMAT%N))
++    istat = asb_solve_coo_i32(int(spMAT%N,c_int64_t), int(spMAT%NZ,c_int64_t), spMAT%IRN, &
++          spMAT%JCN, spMAT%A, spMAT%rhs, solution, triangle)
++    if (istat /= 0) call hecmw_abort(hecmw_comm_get_comm())
++    call sparse_matrix_scatter_rhs(spMAT, solution)
++  end subroutine
++#endif
++
+   subroutine set_mumps_pointers(mumps_par, spMAT)
+     implicit none
+     type (dmumps_struc), intent(inout) :: mumps_par

@@ -1,0 +1,27 @@
+{
+  "case": "hinge",
+  "basename": "hinge",
+  "nodes": 333340,
+  "elements": 227819,
+  "equations": 1000020,
+  "calls": 1,
+  "mesh_sha256": "72c89becd945cab72dbda18214083bbccc07025f5d4fa9eefd93381e80ade0bb",
+  "final_result": "hinge.res.0.1",
+  "fields": [
+    {
+      "name": "DISPLACEMENT",
+      "width": 3,
+      "reference_l2": 9.312619836893038
+    },
+    {
+      "name": "NodalSTRESS",
+      "width": 6,
+      "reference_l2": 24554.10383465935
+    },
+    {
+      "name": "NodalMISES",
+      "width": 1,
+      "reference_l2": 22076.014852937016
+    }
+  ]
+}
