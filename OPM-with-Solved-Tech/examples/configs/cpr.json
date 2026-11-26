@@ -1,0 +1,41 @@
+{
+  "maxiter": 20,
+  "tol": 0.005,
+  "verbosity": 0,
+  "solver": "bicgstab",
+  "restart": 15,
+  "preconditioner": {
+    "type": "cprw",
+    "use_well_weights": false,
+    "add_wells": true,
+    "weight_type": "trueimpes",
+    "pre_smooth": 0,
+    "post_smooth": 1,
+    "finesmoother": {
+      "type": "paroverilu0",
+      "relaxation": 1.0
+    },
+    "verbosity": 0,
+    "coarsesolver": {
+      "maxiter": 1,
+      "tol": 0.1,
+      "solver": "loopsolver",
+      "verbosity": 0,
+      "preconditioner": {
+        "type": "hypre",
+        "print_level": 0,
+        "max_iter": 1,
+        "strong_threshold": 0.25,
+        "agg_trunc_factor": 0.3,
+        "interp_type": 6,
+        "max_levels": 50,
+        "tolerance": 0.0,
+        "use_gpu": false,
+        "relax_type": 18,
+        "coarsen_type": 8,
+        "agg_num_levels": 0,
+        "agg_interp_type": 6
+      }
+    }
+  }
+}

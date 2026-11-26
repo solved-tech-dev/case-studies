@@ -1,0 +1,7 @@
+{
+  "solver": "bicgstab",
+  "maxiter": 200,
+  "tol": 0.005,
+  "verbosity": 0,
+  "preconditioner": {"type": "paroverilu0", "relaxation": 1.0}
+}

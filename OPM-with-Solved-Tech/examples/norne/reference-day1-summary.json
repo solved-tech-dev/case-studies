@@ -1,0 +1,101 @@
+{
+  "model": "Norne N64 (4x4x4 global refinement)",
+  "active_cells": 2843196,
+  "main_scalar_unknowns": 8529588,
+  "reservoir_block_nnz": 19947562,
+  "pressure_rows_with_wells": 2843232,
+  "pressure_csr_nnz": 20012068,
+  "note": "Each route implements a different linear solver formulation and uses its own baseline/timing scope. Do not compare speedups across routes directly.",
+  "routes": {
+    "linglongamg": {
+      "algorithm": "OPM CPU outer BiCGStab + CPU paroverilu0 + CPRW True-IMPES + GPU GMRES(10)/LinglongAMG pressure",
+      "day1": {
+        "linglongamg_job": "352448",
+        "cpu64_reference_job": "353062",
+        "linglongamg": {
+          "linear_setup_s": 2.83,
+          "linear_solve_s": 1.55,
+          "linear_total_s": 4.38,
+          "pressure_gmres_calls": 4,
+          "pressure_gmres_iterations": 32,
+          "last_reported_relative_residual": 5.11e-07,
+          "amg_levels": 9,
+          "newton_iterations": 3,
+          "outer_bicgstab_iterations": 1,
+          "process_wall_s": 98.93
+        },
+        "cpu64_hypre_cpu": {
+          "linear_setup_s": 3.03,
+          "linear_solve_s": 3.99,
+          "linear_total_s": 7.02,
+          "pressure_gmres_calls": 4,
+          "pressure_gmres_iterations": 30,
+          "last_true_relative_residual": 6.590540513439703e-07
+        }
+      },
+      "day176_timed": {
+        "jobs": {
+          "cpu64": "354826",
+          "linglongamg": ["354827", "354839"],
+          "amgx": ["354827", "354933"],
+          "hypre_gpu": ["354827", "354933"]
+        },
+        "pressure_api_only": {
+          "cpu64_hypre_cpu": {"setup_s": 43.77, "solve_s": 181.56, "total_s": 225.33, "calls": 799, "iterations": 6385},
+          "linglongamg": {"setup_s": 6.05, "solve_s": 27.67, "total_s": 33.73, "calls": 669, "iterations": 5611},
+          "amgx": {"setup_s": 33.09, "solve_s": 30.38, "total_s": 63.46, "calls": 675, "iterations": 5043},
+          "hypre_gpu": {"setup_s": 23.36, "solve_s": 19.79, "total_s": 43.16, "calls": 579, "iterations": 4761}
+        }
+      }
+    },
+    "xianzhikrylov": {
+      "algorithm": "Full-coupled BSR3 BiCGStab + single-level block ILU(0) with independent GPU well operator (no CPR/AMG)",
+      "day1_no_output_timing": {
+        "jobs": {
+          "cpu64_timing": "364339",
+          "ginkgo_timing": "364340",
+          "xianzhikrylov_timing": "364338",
+          "cpu64_audit": "364337",
+          "ginkgo_audit": "364329",
+          "xianzhikrylov_audit": "364328"
+        },
+        "timesteps": 3,
+        "newton_iterations": 11,
+        "cpu64": {"wall_s": 194.95, "linear_s": 26.56, "iterations": 450, "max_true_relative_residual": 0.004919971558200444},
+        "ginkgo_csr_ilu0": {"wall_s": 193.31, "linear_s": 76.03, "ilu_factor_s": 10.815733913, "ilu_apply_s": 61.196550395, "iterations": 363, "max_true_relative_residual": 0.004974661691599927},
+        "xianzhikrylov_bsr3_ilu0": {"wall_s": 138.81, "linear_s": 20.71, "ilu_factor_s": 0.336632933, "ilu_apply_s": 16.15507889, "iterations": 366, "max_true_relative_residual": 0.004974661691599764},
+        "physical_summary": {"FPR": 271.698669, "FOPT": 4370.048828, "FWPT": 4.52666, "FGPT": 474993.6875, "FWIT": 0.0, "FGIT": 0.0}
+      }
+    },
+    "cpr": {
+      "algorithm": "GPU outer BiCGStab (XianzhiKrylov) + CPRW True-IMPES + GPU GMRES(10) (XianzhiKrylov) + single AMG V-cycle (LinglongAMG) + fine BSR3 block ILU(0) (XianzhiKrylov) + GPU well operator",
+      "day1_paired_no_output": {
+        "job": "356802",
+        "timesteps": 1,
+        "newton_iterations": 3,
+        "linear_systems": 3,
+        "cpu_1rank_hypre_cpu": {
+          "end_to_end_no_simulator_files_s": 99.09,
+          "linear_s": 19.10,
+          "setup_s": 11.43,
+          "pure_outer_solve_s": 7.65602489,
+          "pressure_gmres_s": 6.23098354
+        },
+        "gpu_cpr": {
+          "end_to_end_no_simulator_files_s": 83.39,
+          "linear_s": 3.67,
+          "setup_s": 2.71,
+          "pure_outer_solve_s": 0.909749712,
+          "pressure_gmres_s": 0.715377219,
+          "amg_cycle_s": 0.657110131,
+          "amg_setup_s": 0.286752838,
+          "ilu_factor_s": 0.099161095,
+          "ilu_apply_s": 0.152005961,
+          "fine_spmv_s": 0.03208688,
+          "well_s": 0.002721792
+        },
+        "physical_summary_exact_match": {"FPR": 271.699219, "FOPT": 4370.07324, "FWPT": 4.52492428, "FGPT": 474985.5, "FWIT": 0.0, "FGIT": 0.0}
+      }
+    }
+  }
+}
