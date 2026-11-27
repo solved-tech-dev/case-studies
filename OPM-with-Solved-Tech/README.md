@@ -213,6 +213,8 @@ bash scripts/run-case.sh --route=cpr \
 
 算例均为 **Norne N64（4×4×4 网格加细）**：2,843,196 个活跃单元，8,529,588 阶黑油主系统（`BSR3`, FP64）。以下所有数据均源自各自任务归档日志，完整明细与作业号见 [docs/RESULTS.md](docs/RESULTS.md)。
 
+原始 Norne 角点网格的上游位置，以及 N64 `.EGRID` 的规格、校验和与发布位置，见 [Norne N64 算例说明](examples/norne/README.md#corner-point-grid-files)。
+
 ### A. LinglongAMG 路线（混合路径：CPU 外层 + CPU ILU(0) + GPU 压力 GMRES/AMG）
 
 - **首日（Jobs `352448` / `353062`）**：OPM 线性阶段 `setup 2.83 s + solve 1.55 s = 4.38 s`（32 次 GMRES 迭代，9 层 AMG，4 次压力调用），同口径 CPU64/HYPRE CPU 参考为 `3.03 + 3.99 = 7.02 s`。
