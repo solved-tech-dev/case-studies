@@ -14,7 +14,7 @@
     "amgx": "2.5.0",
     "ginkgo": "1.11.0",
     "linglongamg": "26.46 / SM120 single-V-cycle capable NVIDIA SDK",
-    "xianzhikrylov": "26.48 OPM CPR/ILU component library"
+    "xianzhikrylov": "26.48 public C ABI v3 SDK (XianzhiKrylovAPI.h + XianzhiKrylovData.h)"
   },
   "public_repository_policy": {
     "sdk_binaries_included": false,

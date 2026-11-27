@@ -35,7 +35,7 @@ done
 
 if [[ -z $route ]]; then
     [[ -r "$work_root/active-route" ]] ||
-        die "No active route recorded. Run scripts/configure.sh --route=<linglongamg|xianzhikrylov|cpr> first."
+        die "No active route recorded. Run scripts/configure.sh --route=<linglongamg|xianzhikrylov> first."
     route=$(cat "$work_root/active-route")
 fi
 validate_route "$route"
@@ -68,11 +68,6 @@ if [[ -x $flow_bin ]] && command -v ldd >/dev/null 2>&1; then
             grep -q "libXianzhiKrylov" <<< "$ldd_out" ||
                 die "Expected $flow_bin to link libXianzhiKrylov."
             info "Verified $flow_bin links libXianzhiKrylov and does NOT link liblinglongamg."
-            ;;
-        cpr)
-            grep -q "libXianzhiKrylov" <<< "$ldd_out" ||
-                die "Expected $flow_bin to link libXianzhiKrylov for route=cpr."
-            info "Verified $flow_bin links libXianzhiKrylov (LinglongAMG loaded at runtime via dlopen)."
             ;;
     esac
 fi

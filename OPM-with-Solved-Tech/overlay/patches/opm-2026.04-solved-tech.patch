@@ -1,10 +1,12 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 18f9395..78629a4 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -34,6 +34,11 @@
+@@ -34,6 +34,11 @@ option(USE_AMGX "Enable AMGX support?" OFF)
  option(USE_HYPRE "Use the Hypre library for linear solvers?" OFF)
  set(OPM_COMPILE_COMPONENTS "2;3;4;5;6;7" CACHE STRING "The components to compile support for")
  option(USE_OPENCL "Enable OpenCL support?" ON)
-+set(OPM_SOLVED_TECH_ROUTE "none" CACHE STRING "Solved-Tech OPM GPU route (none, linglongamg, xianzhikrylov, cpr)")
++set(OPM_SOLVED_TECH_ROUTE "none" CACHE STRING "Solved-Tech OPM GPU route (none, linglongamg, xianzhikrylov)")
 +set(LINGLONGAMG_INCLUDE_DIR "" CACHE PATH "Path to LinglongAMG SDK headers")
 +set(XIANZHIKRYLOV_INCLUDE_DIR "" CACHE PATH "Path to XianzhiKrylov SDK headers")
 +set(XIANZHIKRYLOV_LIBRARY "" CACHE FILEPATH "Path to libXianzhiKrylov shared library")
@@ -12,12 +14,10 @@
  
  # Wrapper for opm_add_target_options that also adds
  # compile definitions and target links from the library
-@@ -435,6 +440,34 @@
- 
-   if(USE_GPU_BRIDGE)
+@@ -437,6 +442,27 @@ macro(opm-simulators_config_hook)
      target_compile_definitions(opmsimulators PUBLIC COMPILE_GPU_BRIDGE=1)
-+  endif()
-+
+   endif()
+ 
 +  if(OPM_SOLVED_TECH_ROUTE STREQUAL "none")
 +    # Default upstream OPM build without Solved-Tech GPU backends.
 +  elseif(OPM_SOLVED_TECH_ROUTE STREQUAL "linglongamg")
@@ -25,74 +25,98 @@
 +      message(FATAL_ERROR "OPM_SOLVED_TECH_ROUTE=linglongamg requires CUDA")
 +    endif()
 +    target_compile_definitions(opmsimulators PUBLIC OPM_SOLVED_TECH_ENABLE_LINGLONGAMG=1)
++    target_include_directories(opmsimulators BEFORE SYSTEM PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
 +    target_link_libraries(opmsimulators PUBLIC ${CMAKE_DL_LIBS})
 +  elseif(OPM_SOLVED_TECH_ROUTE STREQUAL "xianzhikrylov")
-+    if(NOT CUDA_FOUND OR NOT USE_GPU_BRIDGE OR NOT XIANZHIKRYLOV_INCLUDE_DIR OR NOT XIANZHIKRYLOV_LIBRARY)
-+      message(FATAL_ERROR "OPM_SOLVED_TECH_ROUTE=xianzhikrylov requires CUDA, USE_GPU_BRIDGE=ON, XIANZHIKRYLOV_INCLUDE_DIR, and XIANZHIKRYLOV_LIBRARY")
++    if(NOT CUDA_FOUND OR NOT XIANZHIKRYLOV_INCLUDE_DIR OR NOT XIANZHIKRYLOV_LIBRARY)
++      message(FATAL_ERROR "OPM_SOLVED_TECH_ROUTE=xianzhikrylov requires CUDA, XIANZHIKRYLOV_INCLUDE_DIR, and XIANZHIKRYLOV_LIBRARY")
 +    endif()
 +    target_compile_definitions(opmsimulators PUBLIC OPM_SOLVED_TECH_ENABLE_XIANZHIKRYLOV=1)
-+    target_sources(opmsimulators PRIVATE opm/simulators/linalg/NorneIluDevice.cu)
-+    set_property(SOURCE opm/simulators/linalg/NorneIluDevice.cu APPEND PROPERTY INCLUDE_DIRECTORIES "${XIANZHIKRYLOV_INCLUDE_DIR}")
-+    target_link_libraries(opmsimulators PUBLIC "${XIANZHIKRYLOV_LIBRARY}" ${OPM_SOLVED_TECH_EXTRA_CUDA_LIBS})
-+  elseif(OPM_SOLVED_TECH_ROUTE STREQUAL "cpr")
-+    if(NOT CUDA_FOUND OR NOT USE_GPU_BRIDGE OR NOT XIANZHIKRYLOV_INCLUDE_DIR OR NOT XIANZHIKRYLOV_LIBRARY OR NOT LINGLONGAMG_INCLUDE_DIR)
-+      message(FATAL_ERROR "OPM_SOLVED_TECH_ROUTE=cpr requires CUDA, USE_GPU_BRIDGE=ON, XIANZHIKRYLOV_INCLUDE_DIR, XIANZHIKRYLOV_LIBRARY, and LINGLONGAMG_INCLUDE_DIR")
-+    endif()
-+    target_compile_definitions(opmsimulators PUBLIC OPM_SOLVED_TECH_ENABLE_CPR=1)
-+    target_sources(opmsimulators PRIVATE opm/simulators/linalg/NorneCprwDevice.cu)
-+    set_property(SOURCE opm/simulators/linalg/NorneCprwDevice.cu APPEND PROPERTY INCLUDE_DIRECTORIES "${XIANZHIKRYLOV_INCLUDE_DIR}" "${LINGLONGAMG_INCLUDE_DIR}")
-+    target_link_libraries(opmsimulators PUBLIC "${XIANZHIKRYLOV_LIBRARY}" ${CMAKE_DL_LIBS} ${OPM_SOLVED_TECH_EXTRA_CUDA_LIBS})
++    target_include_directories(opmsimulators BEFORE SYSTEM PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
++    target_include_directories(opmsimulators PRIVATE "${XIANZHIKRYLOV_INCLUDE_DIR}")
++    target_link_libraries(opmsimulators PUBLIC "${XIANZHIKRYLOV_LIBRARY}" CUDA::cudart ${CMAKE_DL_LIBS} ${OPM_SOLVED_TECH_EXTRA_CUDA_LIBS})
 +  else()
-+    message(FATAL_ERROR "Unsupported OPM_SOLVED_TECH_ROUTE='${OPM_SOLVED_TECH_ROUTE}' (expected none, linglongamg, xianzhikrylov, or cpr)")
-   endif()
- 
-   if(OpenCL_FOUND)
---- a/opm/simulators/linalg/StandardPreconditioners_serial.hpp
-+++ b/opm/simulators/linalg/StandardPreconditioners_serial.hpp
-@@ -26,6 +26,9 @@
- #include <opm/simulators/linalg/gpuistl_hip/PreconditionerCPUMatrixToGPUMatrix.hpp>
- #else
- #include <opm/simulators/linalg/gpuistl/PreconditionerCPUMatrixToGPUMatrix.hpp>
-+#endif
-+#if defined(OPM_SOLVED_TECH_ENABLE_LINGLONGAMG)
-+#include <opm/simulators/linalg/LinglongAMGPreconditioner.hpp>
- #endif
- #endif
- 
-@@ -207,6 +210,15 @@
-                           std::is_same_v<HYPRE_Real, typename V::field_type>) {
-               F::addCreator("hypre", [](const O& op, const P& prm, const std::function<V()>&, std::size_t) {
-                 return std::make_shared<Hypre::HyprePreconditioner<M, V, V, Dune::Amg::SequentialInformation>>(op.getmat(), prm, Dune::Amg::SequentialInformation());
-+                });
-+            }
-+#endif
++    message(FATAL_ERROR "Unsupported OPM_SOLVED_TECH_ROUTE='${OPM_SOLVED_TECH_ROUTE}' (expected none, linglongamg, or xianzhikrylov)")
++  endif()
 +
-+#if defined(OPM_SOLVED_TECH_ENABLE_LINGLONGAMG) && HAVE_CUDA
-+            if constexpr (M::block_type::rows == 1 && M::block_type::cols == 1 &&
-+                          std::is_same_v<double, typename V::field_type>) {
-+                F::addCreator("linglongamg", [](const O& op, const P& prm, const std::function<V()>&, std::size_t) {
-+                    return std::make_shared<LinglongAMGPreconditioner<M, V>>(op.getmat(), prm);
-                 });
-             }
- #endif
+   if(OpenCL_FOUND)
+     if( USE_CHOW_PATEL_ILU)
+       target_compile_definitions(opmsimulators PRIVATE CHOW_PATEL=1)
+diff --git a/opm/simulators/linalg/ISTLSolver.cpp b/opm/simulators/linalg/ISTLSolver.cpp
+index c7d7031..b941a66 100644
+--- a/opm/simulators/linalg/ISTLSolver.cpp
++++ b/opm/simulators/linalg/ISTLSolver.cpp
+@@ -32,6 +32,12 @@
+ #include <opm/simulators/utils/ParallelCommunication.hpp>
+ 
+ #include <fmt/format.h>
++#include <cstdlib>
++#include <cstring>
++#include <stdexcept>
++#if defined(OPM_SOLVED_TECH_ENABLE_XIANZHIKRYLOV) && HAVE_CUDA
++#include "NorneXianzhi.hpp"
++#endif
+ 
+ #if COMPILE_GPU_BRIDGE
+ #include <opm/simulators/linalg/gpubridge/GpuBridge.hpp>
+@@ -113,6 +119,40 @@ void FlexibleSolverInfo<Matrix,Vector,Comm>::create(const Matrix& matrix,
+     this->op_.reset();
+     this->solver_.reset();
+ 
++    const char* requestedRoute = std::getenv("OPM_SOLVED_TECH_ROUTE");
++    const bool wantXianzhiRoute =
++        (requestedRoute && std::strcmp(requestedRoute, "xianzhikrylov") == 0) ||
++        std::getenv("NORNE_XK_CONFIG") != nullptr;
++    if (wantXianzhiRoute) {
++#if defined(OPM_SOLVED_TECH_ENABLE_XIANZHIKRYLOV) && HAVE_CUDA
++        if (parallel || wellOperator_) {
++            throw std::logic_error(
++                "XianzhiKrylov explicit full-coupled route requires one MPI rank and --matrix-add-well-contributions=true");
++        }
++        if constexpr (Matrix::block_type::rows == 3 &&
++                      std::is_same_v<typename Matrix::field_type, double>) {
++            const char* configPath = std::getenv("XIANZHIKRYLOV_OPM_CONFIG");
++            if (!configPath || *configPath == '\0') {
++                configPath = std::getenv("NORNE_XK_CONFIG");
++            }
++            if (!configPath || *configPath == '\0') {
++                throw std::invalid_argument("Set XIANZHIKRYLOV_OPM_CONFIG for OPM_SOLVED_TECH_ROUTE=xianzhikrylov");
++            }
++            using SeqOperatorType = Dune::MatrixAdapter<Matrix, Vector, Vector>;
++            auto sop = std::make_unique<SeqOperatorType>(matrix);
++            auto solver = std::make_unique<NorneXianzhi<Matrix, Vector>>(
++                matrix, configPath, prm.get<double>("tol", 0.005));
++            this->pre_ = solver.get();
++            this->op_ = std::move(sop);
++            this->solver_ = std::move(solver);
++            return;
++        }
++        throw std::logic_error("XianzhiKrylov route requires FP64 BSR3");
++#else
++        throw std::logic_error("This OPM binary was not built with OPM_SOLVED_TECH_ROUTE=xianzhikrylov");
++#endif
++    }
++
+     if (parallel) {
+ #if HAVE_MPI
+         if (!wellOperator_) {
+diff --git a/opm/simulators/linalg/ISTLSolver.hpp b/opm/simulators/linalg/ISTLSolver.hpp
+index 8ecb0e4..868f219 100644
 --- a/opm/simulators/linalg/ISTLSolver.hpp
 +++ b/opm/simulators/linalg/ISTLSolver.hpp
-@@ -45,6 +45,14 @@
+@@ -45,6 +45,11 @@
  #include <opm/simulators/linalg/istlsparsematrixadapter.hh>
  #include <opm/simulators/linalg/PreconditionerWithUpdate.hpp>
  #include <opm/simulators/linalg/WellOperators.hpp>
-+#if (defined(OPM_SOLVED_TECH_ENABLE_XIANZHIKRYLOV) || defined(OPM_SOLVED_TECH_ENABLE_CPR)) && HAVE_CUDA
-+#include "NorneWellDevice.hpp"
-+#endif
 +#include <chrono>
 +#include <cmath>
 +#include <cstdio>
 +#include <cstdlib>
-+#include <cstring>
++#include <stdexcept>
  #include <opm/simulators/linalg/WriteSystemMatrixHelper.hpp>
  #include <opm/simulators/linalg/findOverlapRowsAndColumns.hpp>
  #include <opm/simulators/linalg/getQuasiImpesWeights.hpp>
-@@ -419,6 +427,17 @@
+@@ -419,6 +424,17 @@ std::unique_ptr<Matrix> blockJacobiAdjacency(const Grid& grid,
                                      comm_.get());
              }
  
@@ -110,7 +134,7 @@
              // Solve system.
              Dune::InverseOperatorResult result;
              {
-@@ -427,6 +446,33 @@
+@@ -427,6 +443,33 @@ std::unique_ptr<Matrix> blockJacobiAdjacency(const Grid& grid,
                  flexibleSolver_[activeSolverNum_].solver_->apply(x, *rhs_, result);
              }
  
@@ -144,20 +168,7 @@
              iterations_ = result.iterations;
  
              // Check convergence, iterations etc.
-@@ -476,9 +522,20 @@
- #endif
-         }
- 
-+        static bool useDeviceWellOperator()
-+        {
-+            if (const char* route = std::getenv("OPM_SOLVED_TECH_ROUTE")) {
-+                if (std::strcmp(route, "xianzhikrylov") == 0 || std::strcmp(route, "cpr") == 0) {
-+                    return true;
-+                }
-+            }
-+            return std::getenv("NORNE_GPU_ILU_ONLY") != nullptr || std::getenv("NORNE_GPU_CPRW") != nullptr;
-+        }
-+
+@@ -479,6 +522,7 @@ std::unique_ptr<Matrix> blockJacobiAdjacency(const Grid& grid,
          void prepareFlexibleSolver()
          {
              OPM_TIMEBLOCK(flexibleSolverPrepare);
@@ -165,149 +176,45 @@
              if (shouldCreateSolver()) {
                  if (!useWellConn_) {
                      if (isNlddLocalSolver()) {
-@@ -487,8 +544,21 @@
-                         flexibleSolver_[activeSolverNum_].wellOperator_ = std::move(wellOp);
-                     }
-                     else {
--                        auto wellOp = std::make_unique<WellModelOperator>(simulator_.problem().wellModel());
--                        flexibleSolver_[activeSolverNum_].wellOperator_ = std::move(wellOp);
-+#if (defined(OPM_SOLVED_TECH_ENABLE_XIANZHIKRYLOV) || defined(OPM_SOLVED_TECH_ENABLE_CPR)) && HAVE_CUDA
-+                        if constexpr (Matrix::block_type::rows == 3 &&
-+                                      std::is_same_v<typename Matrix::field_type, double>) {
-+                            if (useDeviceWellOperator()) {
-+                                using DeviceWellOperator = detail::NorneWellOperator<WellModel, Vector>;
-+                                flexibleSolver_[activeSolverNum_].wellOperator_ =
-+                                    std::make_unique<DeviceWellOperator>(simulator_.problem().wellModel());
-+                            } else {
-+                                flexibleSolver_[activeSolverNum_].wellOperator_ =
-+                                    std::make_unique<WellModelOperator>(simulator_.problem().wellModel());
-+                            }
-+                        } else
-+#endif
-+                            flexibleSolver_[activeSolverNum_].wellOperator_ =
-+                                std::make_unique<WellModelOperator>(simulator_.problem().wellModel());
-                     }
-                 }
-                 std::function<Vector()> weightCalculator = this->getWeightsCalculator(prm_[activeSolverNum_], getMatrix(), pressureIndex);
-@@ -505,6 +575,11 @@
-             {
+@@ -506,6 +550,11 @@ std::unique_ptr<Matrix> blockJacobiAdjacency(const Grid& grid,
                  OPM_TIMEBLOCK(flexibleSolverUpdate);
                  flexibleSolver_[activeSolverNum_].pre_->update();
-+            }
+             }
 +            if ((std::getenv("OPM_SOLVED_TECH_PROFILE") || std::getenv("NORNE_ILU_PROFILE")) &&
 +                simulator_.gridView().comm().rank() == 0) {
 +                const double time = std::chrono::duration<double>(std::chrono::steady_clock::now() - prepStarted).count();
 +                std::fprintf(stderr, "OPM_SOLVED_TECH_PREPARE system=%d elapsed_s=%.9f\n", solveCount_ + 1, time);
++            }
+         }
+ 
+ 
+diff --git a/opm/simulators/linalg/StandardPreconditioners_serial.hpp b/opm/simulators/linalg/StandardPreconditioners_serial.hpp
+index 23971a7..e8e437d 100644
+--- a/opm/simulators/linalg/StandardPreconditioners_serial.hpp
++++ b/opm/simulators/linalg/StandardPreconditioners_serial.hpp
+@@ -27,6 +27,9 @@
+ #else
+ #include <opm/simulators/linalg/gpuistl/PreconditionerCPUMatrixToGPUMatrix.hpp>
+ #endif
++#if defined(OPM_SOLVED_TECH_ENABLE_LINGLONGAMG)
++#include <opm/simulators/linalg/LinglongAMGPreconditioner.hpp>
++#endif
+ #endif
+ 
+ #include <functional>
+@@ -210,6 +213,15 @@ struct StandardPreconditioners<Operator, Dune::Amg::SequentialInformation, typen
+                 });
              }
-         }
- 
---- a/opm/simulators/linalg/ISTLSolver.cpp
-+++ b/opm/simulators/linalg/ISTLSolver.cpp
-@@ -32,6 +32,14 @@
- #include <opm/simulators/utils/ParallelCommunication.hpp>
- 
- #include <fmt/format.h>
-+#include <cstdlib>
-+#include <cstring>
-+#if defined(OPM_SOLVED_TECH_ENABLE_XIANZHIKRYLOV) && HAVE_CUDA
-+#include "NorneIluSolver.hpp"
-+#endif
-+#if defined(OPM_SOLVED_TECH_ENABLE_CPR) && HAVE_CUDA
-+#include "NorneCprwSolver.hpp"
-+#endif
- 
- #if COMPILE_GPU_BRIDGE
- #include <opm/simulators/linalg/gpubridge/GpuBridge.hpp>
-@@ -113,6 +121,20 @@
-     this->op_.reset();
-     this->solver_.reset();
- 
-+    const char* requestedRoute = std::getenv("OPM_SOLVED_TECH_ROUTE");
-+    const bool wantXianzhiRoute =
-+        (requestedRoute && std::strcmp(requestedRoute, "xianzhikrylov") == 0) ||
-+        std::getenv("NORNE_GPU_ILU_ONLY") != nullptr;
-+    const bool wantCprRoute =
-+        (requestedRoute && std::strcmp(requestedRoute, "cpr") == 0) ||
-+        std::getenv("NORNE_GPU_CPRW") != nullptr;
-+    if (wantXianzhiRoute && wantCprRoute) {
-+        throw std::logic_error("Cannot activate xianzhikrylov and cpr routes simultaneously");
-+    }
-+    if ((wantXianzhiRoute || wantCprRoute) && (parallel || !wellOperator_)) {
-+        throw std::logic_error("Solved-Tech GPU BSR3 route requires one MPI rank and an independent well operator");
-+    }
+ #endif
 +
-     if (parallel) {
- #if HAVE_MPI
-         if (!wellOperator_) {
-@@ -152,6 +174,45 @@
-         } else {
-             using SeqOperatorType = WellModelMatrixAdapter<Matrix, Vector, Vector>;
-             auto sop = std::make_unique<SeqOperatorType>(matrix, *wellOperator_);
-+            if (wantXianzhiRoute) {
-+#if defined(OPM_SOLVED_TECH_ENABLE_XIANZHIKRYLOV) && HAVE_CUDA
-+                if constexpr (Matrix::block_type::rows == 3 &&
-+                              std::is_same_v<typename Matrix::field_type, double>) {
-+                    const auto* wells = dynamic_cast<const NorneWellSource*>(wellOperator_.get());
-+                    if (!wells) {
-+                        throw std::logic_error("XianzhiKrylov route requires independent standard well contributions");
-+                    }
-+                    auto solver = std::make_unique<NorneIluSolver<Matrix, Vector>>(*sop, *wells, prm);
-+                    this->pre_ = solver.get();
-+                    this->op_ = std::move(sop);
-+                    this->solver_ = std::move(solver);
-+                    return;
-+                }
-+                throw std::logic_error("XianzhiKrylov route requires FP64 BSR3");
-+#else
-+                throw std::logic_error("This OPM binary was not built with OPM_SOLVED_TECH_ROUTE=xianzhikrylov");
-+#endif
++#if defined(OPM_SOLVED_TECH_ENABLE_LINGLONGAMG) && HAVE_CUDA
++            if constexpr (M::block_type::rows == 1 && M::block_type::cols == 1 &&
++                          std::is_same_v<double, typename V::field_type>) {
++                F::addCreator("linglongamg", [](const O& op, const P& prm, const std::function<V()>&, std::size_t) {
++                    return std::make_shared<LinglongAMGPreconditioner<M, V>>(op.getmat(), prm);
++                });
 +            }
-+            if (wantCprRoute) {
-+#if defined(OPM_SOLVED_TECH_ENABLE_CPR) && HAVE_CUDA
-+                if constexpr (Matrix::block_type::rows == 3 &&
-+                              std::is_same_v<typename Matrix::field_type, double>) {
-+                    const auto* wells = dynamic_cast<const NorneWellSource*>(wellOperator_.get());
-+                    if (!wells) {
-+                        throw std::logic_error("CPR route requires independent standard well contributions");
-+                    }
-+                    auto solver = std::make_unique<NorneCprwSolver<Matrix, Vector>>(
-+                        *sop, *wells, prm, weightsCalculator, int(pressureIndex));
-+                    this->pre_ = solver.get();
-+                    this->op_ = std::move(sop);
-+                    this->solver_ = std::move(solver);
-+                    return;
-+                }
-+                throw std::logic_error("CPR route requires FP64 BSR3");
-+#else
-+                throw std::logic_error("This OPM binary was not built with OPM_SOLVED_TECH_ROUTE=cpr");
 +#endif
-+            }
-             using FlexibleSolverType = Dune::FlexibleSolver<SeqOperatorType>;
-             auto sol = std::make_unique<FlexibleSolverType>(*sop, prm,
-                                                             weightsCalculator,
---- a/opm/simulators/linalg/gpubridge/cuda/cuWellContributions.cu
-+++ b/opm/simulators/linalg/gpubridge/cuda/cuWellContributions.cu
-@@ -115,16 +115,18 @@
-     __syncthreads();
- 
-     // y -= C^T * D^-1 * B * x
--    // use dim * val_size threads, each block is assigned 'dim' threads
--    if (idx_t < dim * val_size) {
-+    // The grid assigns one warp to each well. Cover every perforation
-+    // even when dim * val_size exceeds the warp size.
-+    for (unsigned int entry = idx_t; entry < dim * val_size; entry += blockDim.x) {
-         Scalar temp = 0.0;
--        int b = idx_t / dim + val_pointers[idx_b];
--        int cc = idx_t % dim;
-+        int b = entry / dim + val_pointers[idx_b];
-+        int cc = entry % dim;
-         int colIdx = Ccols[b];
-         for (unsigned int c = 0; c < dim_wells; ++c) {
-             temp += Cnnzs[b * dim * dim_wells + c * dim + cc] * z2[c];
          }
--        y[colIdx * dim + cc] -= temp;
-+        // A cell can receive contributions from several perforations.
-+        atomicAdd(y + colIdx * dim + cc, -temp);
-     }
- }
  
+         // Add CPRW only for the WellModelMatrixAdapter, as the method requires that the operator

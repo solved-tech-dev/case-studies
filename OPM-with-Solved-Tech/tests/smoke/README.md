@@ -1,6 +1,6 @@
 # Component Smoke Tests (Requires GPU + SDK + License)
 
-These two standalone CUDA smoke tests verify each backend in isolation before running full OPM Norne N64 simulations:
+These two standalone tests verify each backend in isolation before running full OPM Norne N64 simulations:
 
 1. `check-linglong-cycle.cu`:
    - Loads `liblinglongamg.so` via `dlopen` (validating SDK license).
@@ -16,18 +16,21 @@ These two standalone CUDA smoke tests verify each backend in isolation before ru
    ./work/check-linglong-cycle "$LINGLONGAMG_ROOT/lib/liblinglongamg.so" examples/configs/linglong-vcycle.json
    ```
 
-2. `check-xianzhikrylov-ilu.cu`:
-   - Exercises `xk_internal_cprw_krylov_create` / `solve` / `destroy` for both BiCGStab (`method=3`) and GMRES (`method=7`) with device callbacks.
-   - Exercises `xk_internal_cprw_ilu_create`, two `xk_internal_cprw_ilu_prepare` numeric refreshes, and repeated `xk_internal_cprw_ilu_apply` calls on a 2-block `BSR3` matrix.
-   - Checks `/proc/self/maps` to confirm `liblinglongamg` is **not** loaded.
+2. `check-xianzhikrylov-bsr3.cpp`:
+   - Uses ONLY public `XianzhiKrylovAPI.h` and `XianzhiKrylovData.h` (`xianzhikrylov_create`, `xianzhikrylov_config_set`, `xianzhikrylov_matrix_create`, `xianzhikrylov_vector_create`, `xianzhikrylov_execute`, `xianzhikrylov_print_info`, and destroy APIs).
+   - Exercises staged `PHASE_ANALYSIS` + repeated `PHASE_NUMERIC_PREPARE` / `PHASE_SOLVE` on a 2-block `BSR3` (6x6 scalar) nonsymmetric matrix with `examples/configs/xk-bsr3-bicgstab-ilu0.json`.
+   - Independently computes host true relative L2 residual (`< 0.005`, observed `~1.4e-16` / `1.6e-16`) and checks `/proc/self/maps` to confirm `liblinglongamg` is **not** loaded.
 
    Build & run:
    ```bash
-   "$CUDA_HOME/bin/nvcc" -std=c++17 -O2 \
-     -I"$XIANZHIKRYLOV_ROOT/include" \
-     tests/smoke/check-xianzhikrylov-ilu.cu \
-     "$XIANZHIKRYLOV_ROOT/lib/libXianzhiKrylov.so" \
+   g++ -std=c++17 -O2 \
+     -I"$XIANZHIKRYLOV_ROOT/include" -I"$CUDA_HOME/include" \
+     tests/smoke/check-xianzhikrylov-bsr3.cpp \
+     -L"$XIANZHIKRYLOV_ROOT/lib" -lXianzhiKrylov \
+     -L"$CUDA_HOME/lib64" -lcudart \
+     -Wl,--enable-new-dtags \
      -Wl,-rpath,"$XIANZHIKRYLOV_ROOT/lib" \
-     -o work/check-xianzhikrylov-ilu
-   ./work/check-xianzhikrylov-ilu
+     -Wl,-rpath,"$CUDA_HOME/lib64" \
+     -o work/check-xianzhikrylov-bsr3
+   ./work/check-xianzhikrylov-bsr3 examples/configs/xk-bsr3-bicgstab-ilu0.json
    ```

@@ -45,10 +45,12 @@ for s in "$package_dir"/scripts/*.sh; do
 done
 
 info "4/6 Checking invalid-route error handling and no-SDK preflight..."
-if bash "$package_dir/scripts/configure.sh" --route=invalid >/dev/null 2>&1; then
-    die "configure.sh --route=invalid unexpectedly succeeded"
-fi
-for r in linglongamg xianzhikrylov cpr; do
+for bad_route in invalid cpr; do
+    if bash "$package_dir/scripts/configure.sh" --route="$bad_route" >/dev/null 2>&1; then
+        die "configure.sh --route=$bad_route unexpectedly succeeded"
+    fi
+done
+for r in linglongamg xianzhikrylov; do
     if env -u LINGLONGAMG_ROOT -u XIANZHIKRYLOV_ROOT -u CUDA_HOME \
         bash "$package_dir/scripts/check-env.sh" --route="$r" >/dev/null 2>&1; then
         die "check-env.sh --route=$r unexpectedly succeeded without SDK env vars"
@@ -62,7 +64,7 @@ if [[ -n $opm_source && -r "$opm_source/CMakeLists.txt" ]]; then
     info "6/6 Testing patch + route-isolated overlay preparation against $opm_source..."
     tmp_base=$(mktemp -d)
     trap 'rm -rf -- "$tmp_base"' EXIT
-    for r in linglongamg xianzhikrylov cpr; do
+    for r in linglongamg xianzhikrylov; do
         OPM_SOLVED_TECH_WORK_ROOT="$tmp_base" \
             bash "$package_dir/scripts/prepare-source.sh" \
                 --route="$r" --source-root="$opm_source" --dest="$tmp_base/src-$r" >/dev/null
@@ -70,22 +72,18 @@ if [[ -n $opm_source && -r "$opm_source/CMakeLists.txt" ]]; then
             linglongamg)
                 [[ -r "$tmp_base/src-$r/opm/simulators/linalg/LinglongAMGPreconditioner.hpp" ]] ||
                     die "Missing LinglongAMGPreconditioner.hpp for route=linglongamg"
-                [[ ! -e "$tmp_base/src-$r/opm/simulators/linalg/NorneIluSolver.hpp" ]] ||
-                    die "Unexpected NorneIluSolver.hpp in route=linglongamg"
+                [[ ! -e "$tmp_base/src-$r/opm/simulators/linalg/NorneXianzhi.hpp" ]] ||
+                    die "Unexpected NorneXianzhi.hpp in route=linglongamg"
                 ;;
             xianzhikrylov)
-                [[ -r "$tmp_base/src-$r/opm/simulators/linalg/NorneIluSolver.hpp" ]] ||
-                    die "Missing NorneIluSolver.hpp for route=xianzhikrylov"
+                [[ -r "$tmp_base/src-$r/opm/simulators/linalg/NorneXianzhi.hpp" ]] ||
+                    die "Missing NorneXianzhi.hpp for route=xianzhikrylov"
                 [[ ! -e "$tmp_base/src-$r/opm/simulators/linalg/LinglongAMGPreconditioner.hpp" ]] ||
                     die "Unexpected LinglongAMGPreconditioner.hpp in route=xianzhikrylov"
                 ;;
-            cpr)
-                [[ -r "$tmp_base/src-$r/opm/simulators/linalg/NorneCprwSolver.hpp" ]] ||
-                    die "Missing NorneCprwSolver.hpp for route=cpr"
-                ;;
         esac
     done
-    info "Patch + route-isolation dry-run passed for all 3 routes."
+    info "Patch + route-isolation dry-run passed for both routes."
 else
     info "6/6 Skipped patch-apply test (OPM_SOURCE_ROOT / --opm-source not provided)."
 fi
@@ -96,7 +94,7 @@ if [[ $static_only -eq 1 ]]; then
 fi
 
 info "Checking GPU smoke / runtime prerequisites..."
-for r in linglongamg xianzhikrylov cpr; do
+for r in linglongamg xianzhikrylov; do
     if ! bash "$package_dir/scripts/check-env.sh" --route="$r"; then
         die "Runtime checks require CUDA + LinglongAMG + XianzhiKrylov SDKs (or run with --static-only)."
     fi

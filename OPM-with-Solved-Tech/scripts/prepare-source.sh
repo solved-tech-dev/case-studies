@@ -4,14 +4,14 @@ source "$(dirname -- "${BASH_SOURCE[0]}")/common.sh"
 
 usage() {
     cat <<'EOF'
-Usage: prepare-source.sh --route=<linglongamg|xianzhikrylov|cpr> [OPTIONS]
+Usage: prepare-source.sh --route=<linglongamg|xianzhikrylov> [OPTIONS]
 
 Prepare a patched opm-simulators working tree in work/source-<route> by copying
 OPM_SOURCE_ROOT, applying overlay/patches/opm-2026.04-solved-tech.patch, and
 installing only the route-specific overlay source files.
 
 Options:
-  --route=ROUTE         Required route: linglongamg, xianzhikrylov, or cpr
+  --route=ROUTE         Required route: linglongamg or xianzhikrylov
   --source-root=DIR     Upstream opm-simulators 2026.04 tree (default: $OPM_SOURCE_ROOT)
   --dest=DIR            Destination directory (default: work/source-<route>)
   --force               Remove existing destination directory before preparing
@@ -50,7 +50,7 @@ if [[ -e $dest ]]; then
 fi
 
 mkdir -p -- "$(dirname -- "$dest")"
-cp -a -- "$source_root" "$dest"
+cp -R -- "$source_root" "$dest"
 
 patch_file="$package_dir/overlay/patches/opm-2026.04-solved-tech.patch"
 [[ -r $patch_file ]] || die "Missing patch file: $patch_file"
@@ -68,14 +68,7 @@ case "$route" in
         cp -R -- "$package_dir/overlay/linglongamg/opm/." "$dest/opm/"
         ;;
     xianzhikrylov)
-        cp -R -- "$package_dir/overlay/common/opm/." "$dest/opm/"
         cp -R -- "$package_dir/overlay/xianzhikrylov/opm/." "$dest/opm/"
-        ;;
-    cpr)
-        cp -R -- "$package_dir/overlay/common/opm/." "$dest/opm/"
-        cp -R -- "$package_dir/overlay/cpr/opm/." "$dest/opm/"
-        cp -- "$package_dir/overlay/linglongamg/opm/simulators/linalg/linglongamg_sdk.h" \
-            "$dest/opm/simulators/linalg/linglongamg_sdk.h"
         ;;
 esac
 

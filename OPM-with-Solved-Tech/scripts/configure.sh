@@ -4,14 +4,14 @@ source "$(dirname -- "${BASH_SOURCE[0]}")/common.sh"
 
 usage() {
     cat <<'EOF'
-Usage: configure.sh --route=<linglongamg|xianzhikrylov|cpr> [OPTIONS]
+Usage: configure.sh --route=<linglongamg|xianzhikrylov> [OPTIONS]
 
 Validate SDK dependencies and configure a CMake/Ninja build for the selected
 OPM route. Fails fast when required backends or headers are missing; never
-silently degrades CPR or cross-links unrelated backends.
+cross-links unrelated backends.
 
 Options:
-  --route=ROUTE         Required route: linglongamg, xianzhikrylov, or cpr
+  --route=ROUTE         Required route: linglongamg or xianzhikrylov
   --source-dir=DIR      Prepared OPM source dir (default: work/source-<route>)
   --build-dir=DIR       CMake build dir (default: work/build-<route>)
   --prefix-path=PATHS   Extra CMAKE_PREFIX_PATH entries (semicolon-separated)
@@ -67,6 +67,7 @@ cmake_args=(
     -G Ninja
     -DCMAKE_BUILD_TYPE=Release
     -DOPM_SOLVED_TECH_ROUTE="$route"
+    -DUSE_GPU_BRIDGE=OFF
     -DUSE_HYPRE=OFF
     -DUSE_AMGX=OFF
     -DUSE_OPENCL=OFF
@@ -95,28 +96,12 @@ case "$route" in
     linglongamg)
         ll_inc=$(find_linglong_header "$LINGLONGAMG_ROOT")
         ll_lib=$(find_linglong_library "$LINGLONGAMG_ROOT")
-        cmake_args+=(
-            -DUSE_GPU_BRIDGE=OFF
-            -DLINGLONGAMG_INCLUDE_DIR="$ll_inc"
-        )
+        cmake_args+=(-DLINGLONGAMG_INCLUDE_DIR="$ll_inc")
         ;;
     xianzhikrylov)
         xk_inc=$(find_xianzhi_include "$XIANZHIKRYLOV_ROOT")
         xk_lib=$(find_xianzhi_library "$XIANZHIKRYLOV_ROOT")
         cmake_args+=(
-            -DUSE_GPU_BRIDGE=ON
-            -DXIANZHIKRYLOV_INCLUDE_DIR="$xk_inc"
-            -DXIANZHIKRYLOV_LIBRARY="$xk_lib"
-        )
-        ;;
-    cpr)
-        ll_inc=$(find_linglong_header "$LINGLONGAMG_ROOT")
-        ll_lib=$(find_linglong_library "$LINGLONGAMG_ROOT")
-        xk_inc=$(find_xianzhi_include "$XIANZHIKRYLOV_ROOT")
-        xk_lib=$(find_xianzhi_library "$XIANZHIKRYLOV_ROOT")
-        cmake_args+=(
-            -DUSE_GPU_BRIDGE=ON
-            -DLINGLONGAMG_INCLUDE_DIR="$ll_inc"
             -DXIANZHIKRYLOV_INCLUDE_DIR="$xk_inc"
             -DXIANZHIKRYLOV_LIBRARY="$xk_lib"
         )

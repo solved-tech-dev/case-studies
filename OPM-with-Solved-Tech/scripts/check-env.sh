@@ -4,13 +4,14 @@ source "$(dirname -- "${BASH_SOURCE[0]}")/common.sh"
 
 usage() {
     cat <<'EOF'
-Usage: check-env.sh --route=<linglongamg|xianzhikrylov|cpr> [OPTIONS]
+Usage: check-env.sh --route=<linglongamg|xianzhikrylov> [OPTIONS]
 
-Validate required toolchains, SDK headers/libraries, symbols, and license files
-for the selected OPM GPU route without requiring unrelated backends.
+Validate required toolchains, public SDK headers/libraries, symbols, and
+license files for the selected OPM GPU route without requiring unrelated
+backends.
 
 Options:
-  --route=ROUTE         Required route: linglongamg, xianzhikrylov, or cpr
+  --route=ROUTE         Required route: linglongamg or xianzhikrylov
   --require-opm         Also verify OPM_SOURCE_ROOT points to opm-simulators
   --skip-license-check  Skip checking SDK license files (for static/dry-run checks)
   -h, --help            Show this help message and exit
@@ -58,18 +59,13 @@ check_linglongamg() {
             linglongamg_read_csr \
             linglongamg_csr_destroy \
             linglongamg_setup \
+            linglongamg_solve \
+            linglongamg_get_solve_info \
             linglongamg_reset \
             linglongamg_destroy; do
             grep -Eq "[[:space:]]${sym}(@@[^[:space:]]+)?$" <<< "$syms" ||
                 die "LinglongAMG library $lib does not export required symbol: $sym"
         done
-        if [[ $route == cpr ]]; then
-            if ! grep -Eq "[[:space:]]linglongamg_apply_cycle(@@[^[:space:]]+)?$" <<< "$syms"; then
-                grep -Eq "[[:space:]]linglongamg_solve(@@[^[:space:]]+)?$" <<< "$syms" &&
-                    grep -Eq "[[:space:]]linglongamg_get_solve_info(@@[^[:space:]]+)?$" <<< "$syms" ||
-                    die "CPR route requires linglongamg_apply_cycle or linglongamg_solve + linglongamg_get_solve_info in $lib"
-            fi
-        fi
     fi
 
     if [[ $skip_license -eq 0 ]]; then
@@ -85,7 +81,7 @@ check_xianzhikrylov() {
     : "${XIANZHIKRYLOV_ROOT:?Set XIANZHIKRYLOV_ROOT to the XianzhiKrylov SDK root for route=$route.}"
     local inc lib lic
     inc=$(find_xianzhi_include "$XIANZHIKRYLOV_ROOT") ||
-        die "Cannot find XianzhiKrylov_CprComponents.h and XianzhiKrylov_MethodOptions.h under XIANZHIKRYLOV_ROOT=$XIANZHIKRYLOV_ROOT."
+        die "Cannot find XianzhiKrylovAPI.h and XianzhiKrylovData.h under XIANZHIKRYLOV_ROOT=$XIANZHIKRYLOV_ROOT."
     lib=$(find_xianzhi_library "$XIANZHIKRYLOV_ROOT") ||
         die "Cannot find libXianzhiKrylov.so under XIANZHIKRYLOV_ROOT=$XIANZHIKRYLOV_ROOT (or XIANZHIKRYLOV_LIBRARY)."
 
@@ -93,15 +89,17 @@ check_xianzhikrylov() {
     syms=$(nm -D --defined-only "$lib" 2>/dev/null || true)
     if [[ -n $syms ]]; then
         for sym in \
-            xk_internal_cprw_krylov_create \
-            xk_internal_cprw_krylov_solve \
-            xk_internal_cprw_krylov_destroy \
-            xk_internal_cprw_ilu_create \
-            xk_internal_cprw_ilu_prepare \
-            xk_internal_cprw_ilu_apply \
-            xk_internal_cprw_ilu_destroy; do
+            xianzhikrylov_create \
+            xianzhikrylov_config_set \
+            xianzhikrylov_matrix_create \
+            xianzhikrylov_vector_create \
+            xianzhikrylov_execute \
+            xianzhikrylov_print_info \
+            xianzhikrylov_matrix_destroy \
+            xianzhikrylov_vector_destroy \
+            xianzhikrylov_destroy; do
             grep -Eq "[[:space:]]${sym}(@@[^[:space:]]+)?$" <<< "$syms" ||
-                die "XianzhiKrylov library $lib does not export required symbol: $sym"
+                die "XianzhiKrylov library $lib does not export required public symbol: $sym"
         done
     fi
 
@@ -122,11 +120,6 @@ case "$route" in
     xianzhikrylov)
         check_xianzhikrylov
         info "Route isolation: LinglongAMG is NOT required and will NOT be linked."
-        ;;
-    cpr)
-        check_linglongamg
-        check_xianzhikrylov
-        info "Route cpr verified both LinglongAMG and XianzhiKrylov SDKs."
         ;;
 esac
 

@@ -14,9 +14,9 @@ info() {
 
 validate_route() {
     case "${1:-}" in
-        linglongamg|xianzhikrylov|cpr) ;;
+        linglongamg|xianzhikrylov) ;;
         *)
-            die "Invalid --route='${1:-}'. Expected one of: linglongamg, xianzhikrylov, cpr."
+            die "Invalid --route='${1:-}'. Expected one of: linglongamg, xianzhikrylov."
             ;;
     esac
 }
@@ -57,7 +57,7 @@ find_xianzhi_include() {
         "${XIANZHIKRYLOV_INCLUDE_DIR:-}" \
         "$root/include" \
         "$root"; do
-        if [[ -n $candidate && -r "$candidate/XianzhiKrylov_CprComponents.h" && -r "$candidate/XianzhiKrylov_MethodOptions.h" ]]; then
+        if [[ -n $candidate && -r "$candidate/XianzhiKrylovAPI.h" && -r "$candidate/XianzhiKrylovData.h" ]]; then
             printf '%s\n' "$candidate"
             return 0
         fi
@@ -102,15 +102,15 @@ find_license_file() {
         fi
     done
     local match
-    match=$(compgen -G "$root/*.lic" | head -n 1 || true)
-    if [[ -n $match && -r $match ]]; then
-        printf '%s\n' "$match"
-        return 0
-    fi
-    match=$(compgen -G "$root/license/*.lic" | head -n 1 || true)
-    if [[ -n $match && -r $match ]]; then
-        printf '%s\n' "$match"
-        return 0
-    fi
+    for glob_pat in \
+        "$root/licenses/*.key" \
+        "$root/*.lic" \
+        "$root/license/*.lic"; do
+        match=$(compgen -G "$glob_pat" | head -n 1 || true)
+        if [[ -n $match && -r $match ]]; then
+            printf '%s\n' "$match"
+            return 0
+        fi
+    done
     return 1
 }

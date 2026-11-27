@@ -1,12 +1,13 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "environment_variables": {
     "OPM_SOURCE_ROOT": "Path to unmodified OPM opm-simulators 2026.04 source tree",
     "CUDA_HOME": "Path to CUDA toolkit root",
-    "LINGLONGAMG_ROOT": "Path to LinglongAMG SDK root (required for linglongamg and cpr routes)",
-    "XIANZHIKRYLOV_ROOT": "Path to XianzhiKrylov SDK root (required for xianzhikrylov and cpr routes)",
-    "LINGLONGAMG_LICENSE": "Optional override path to LinglongAMG license file (defaults to $LINGLONGAMG_ROOT/license.key or license/)",
-    "XIANZHIKRYLOV_LICENSE": "Optional override path to XianzhiKrylov license file (defaults to $XIANZHIKRYLOV_ROOT/license.key or license/)"
+    "LINGLONGAMG_ROOT": "Path to LinglongAMG SDK root (required for linglongamg route)",
+    "XIANZHIKRYLOV_ROOT": "Path to XianzhiKrylov public SDK root (required for xianzhikrylov route)",
+    "LINGLONGAMG_LICENSE": "Optional override path to LinglongAMG license file",
+    "XIANZHIKRYLOV_LICENSE": "Optional override path to XianzhiKrylov license file",
+    "XIANZHIKRYLOV_OPM_CONFIG": "Path to XianzhiKrylov schema v2 JSON configuration for route=xianzhikrylov"
   },
   "routes": {
     "linglongamg": {
@@ -31,51 +32,24 @@
       "required_sdks": ["XIANZHIKRYLOV_ROOT", "CUDA_HOME"],
       "forbidden_linked_libraries": ["liblinglongamg"],
       "xianzhikrylov_required_headers": [
-        "include/XianzhiKrylov_CprComponents.h",
-        "include/XianzhiKrylov_MethodOptions.h"
+        "include/XianzhiKrylovAPI.h",
+        "include/XianzhiKrylovData.h"
       ],
       "xianzhikrylov_required_library": "lib/libXianzhiKrylov.so",
       "xianzhikrylov_required_symbols": [
-        "xk_internal_cprw_krylov_create",
-        "xk_internal_cprw_krylov_solve",
-        "xk_internal_cprw_krylov_destroy",
-        "xk_internal_cprw_ilu_create",
-        "xk_internal_cprw_ilu_prepare",
-        "xk_internal_cprw_ilu_apply",
-        "xk_internal_cprw_ilu_destroy"
+        "xianzhikrylov_create",
+        "xianzhikrylov_config_set",
+        "xianzhikrylov_matrix_create",
+        "xianzhikrylov_vector_create",
+        "xianzhikrylov_execute",
+        "xianzhikrylov_print_info",
+        "xianzhikrylov_matrix_destroy",
+        "xianzhikrylov_vector_destroy",
+        "xianzhikrylov_destroy"
       ],
+      "well_handling": "explicit (--matrix-add-well-contributions=true)",
       "license_required_for": "xianzhikrylov",
       "linglongamg_license_required": false
-    },
-    "cpr": {
-      "required_sdks": ["LINGLONGAMG_ROOT", "XIANZHIKRYLOV_ROOT", "CUDA_HOME"],
-      "forbidden_linked_libraries": [],
-      "linglongamg_required_headers": ["linglongamg.h"],
-      "linglongamg_required_library": "lib/liblinglongamg.so",
-      "linglongamg_required_symbols": [
-        "linglongamg_create_from_config",
-        "linglongamg_read_csr",
-        "linglongamg_csr_destroy",
-        "linglongamg_setup",
-        "linglongamg_reset",
-        "linglongamg_destroy"
-      ],
-      "linglongamg_cycle_symbols": "linglongamg_apply_cycle OR (linglongamg_solve + linglongamg_get_solve_info with NORNE_AMG_ALLOW_SINGLE_STEP=1)",
-      "xianzhikrylov_required_headers": [
-        "include/XianzhiKrylov_CprComponents.h",
-        "include/XianzhiKrylov_MethodOptions.h"
-      ],
-      "xianzhikrylov_required_library": "lib/libXianzhiKrylov.so",
-      "xianzhikrylov_required_symbols": [
-        "xk_internal_cprw_krylov_create",
-        "xk_internal_cprw_krylov_solve",
-        "xk_internal_cprw_krylov_destroy",
-        "xk_internal_cprw_ilu_create",
-        "xk_internal_cprw_ilu_prepare",
-        "xk_internal_cprw_ilu_apply",
-        "xk_internal_cprw_ilu_destroy"
-      ],
-      "license_required_for": ["linglongamg", "xianzhikrylov"]
     }
   }
 }

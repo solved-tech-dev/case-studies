@@ -3,9 +3,10 @@
   "active_cells": 2843196,
   "main_scalar_unknowns": 8529588,
   "reservoir_block_nnz": 19947562,
+  "explicit_well_full_coupled_blocks": 55065494,
   "pressure_rows_with_wells": 2843232,
   "pressure_csr_nnz": 20012068,
-  "note": "Each route implements a different linear solver formulation and uses its own baseline/timing scope. Do not compare speedups across routes directly.",
+  "note": "Each route implements a different linear solver formulation and uses its own baseline/timing scope. Only routes supported by published 26.46/26.48 public SDKs are listed; CPR awaits standalone preconditioner apply in 26.49.",
   "routes": {
     "linglongamg": {
       "algorithm": "OPM CPU outer BiCGStab + CPU paroverilu0 + CPRW True-IMPES + GPU GMRES(10)/LinglongAMG pressure",
@@ -49,52 +50,24 @@
       }
     },
     "xianzhikrylov": {
-      "algorithm": "Full-coupled BSR3 BiCGStab + single-level block ILU(0) with independent GPU well operator (no CPR/AMG)",
-      "day1_no_output_timing": {
-        "jobs": {
-          "cpu64_timing": "364339",
-          "ginkgo_timing": "364340",
-          "xianzhikrylov_timing": "364338",
-          "cpu64_audit": "364337",
-          "ginkgo_audit": "364329",
-          "xianzhikrylov_audit": "364328"
-        },
-        "timesteps": 3,
-        "newton_iterations": 11,
-        "cpu64": {"wall_s": 194.95, "linear_s": 26.56, "iterations": 450, "max_true_relative_residual": 0.004919971558200444},
-        "ginkgo_csr_ilu0": {"wall_s": 193.31, "linear_s": 76.03, "ilu_factor_s": 10.815733913, "ilu_apply_s": 61.196550395, "iterations": 363, "max_true_relative_residual": 0.004974661691599927},
-        "xianzhikrylov_bsr3_ilu0": {"wall_s": 138.81, "linear_s": 20.71, "ilu_factor_s": 0.336632933, "ilu_apply_s": 16.15507889, "iterations": 366, "max_true_relative_residual": 0.004974661691599764},
-        "physical_summary": {"FPR": 271.698669, "FOPT": 4370.048828, "FWPT": 4.52666, "FGPT": 474993.6875, "FWIT": 0.0, "FGIT": 0.0}
-      }
-    },
-    "cpr": {
-      "algorithm": "GPU outer BiCGStab (XianzhiKrylov) + CPRW True-IMPES + GPU GMRES(10) (XianzhiKrylov) + single AMG V-cycle (LinglongAMG) + fine BSR3 block ILU(0) (XianzhiKrylov) + GPU well operator",
-      "day1_paired_no_output": {
-        "job": "356802",
-        "timesteps": 1,
-        "newton_iterations": 3,
-        "linear_systems": 3,
-        "cpu_1rank_hypre_cpu": {
-          "end_to_end_no_simulator_files_s": 99.09,
-          "linear_s": 19.10,
-          "setup_s": 11.43,
-          "pure_outer_solve_s": 7.65602489,
-          "pressure_gmres_s": 6.23098354
-        },
-        "gpu_cpr": {
-          "end_to_end_no_simulator_files_s": 83.39,
-          "linear_s": 3.67,
-          "setup_s": 2.71,
-          "pure_outer_solve_s": 0.909749712,
-          "pressure_gmres_s": 0.715377219,
-          "amg_cycle_s": 0.657110131,
-          "amg_setup_s": 0.286752838,
-          "ilu_factor_s": 0.099161095,
-          "ilu_apply_s": 0.152005961,
-          "fine_spmv_s": 0.03208688,
-          "well_s": 0.002721792
-        },
-        "physical_summary_exact_match": {"FPR": 271.699219, "FOPT": 4370.07324, "FWPT": 4.52492428, "FGPT": 474985.5, "FWIT": 0.0, "FGIT": 0.0}
+      "algorithm": "Public XianzhiKrylovAPI.h explicit full-coupled BSR3 BiCGStab + native BSR3 ILU(0) level=0 (--matrix-add-well-contributions=true)",
+      "sdk_release": "26.48 (public XianzhiKrylovAPI.h)",
+      "public_sdk_rtx5090_verification": {
+        "smoke_job": "367086",
+        "smoke_rel1": 1.40143685622e-16,
+        "smoke_rel2": 1.61684425616e-16,
+        "day1_run_job": "367095",
+        "exit_code": 124,
+        "timeout_s": 1050,
+        "completed_physical_days": 0.33,
+        "timestep0_newton_iterations": 3,
+        "timestep0_linear_iterations": 37,
+        "analysis_s": 0.707829109,
+        "typical_numeric_prepare_s": 70.82,
+        "typical_pack_s": 0.193,
+        "typical_values_h2d_s": 0.170,
+        "max_converged_true_relative_residual": 0.0049431710419698665,
+        "note": "No SDK/CUDA errors and exact residual parity; 55,065,494-block explicit-well ILU0 L0 factorization takes ~70.8s per Newton step, reaching the 1050s Slurm cap during timestep 1."
       }
     }
   }

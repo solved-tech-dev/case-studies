@@ -4,15 +4,16 @@ source "$(dirname -- "${BASH_SOURCE[0]}")/common.sh"
 
 usage() {
     cat <<'EOF'
-Usage: run-case.sh --route=<linglongamg|xianzhikrylov|cpr> --deck=FILE [OPTIONS]
+Usage: run-case.sh --route=<linglongamg|xianzhikrylov> --deck=FILE [OPTIONS]
 
 Run an OPM Flow case using the selected route configuration and runtime library
 dispatch.
 
 Options:
-  --route=ROUTE         Required route: linglongamg, xianzhikrylov, or cpr
+  --route=ROUTE         Required route: linglongamg or xianzhikrylov
   --deck=FILE           Path to Eclipse .DATA deck
-  --config=FILE         Solver JSON config (default: examples/configs/<route>.json)
+  --config=FILE         OPM linear solver JSON (default: examples/configs/<route>.json)
+  --xk-config=FILE      XianzhiKrylov JSON config (route=xianzhikrylov; default: examples/configs/xk-bsr3-bicgstab-ilu0.json)
   --flow=BIN            Path to flow binary (default: work/build-<route>/bin/flow)
   --output-dir=DIR      Output directory (default: work/run-<route>)
   --no-output           Pass --enable-ecl-output=false (recommended for timing runs)
@@ -25,6 +26,7 @@ EOF
 route=""
 deck=""
 config=""
+xk_config=""
 flow_bin=""
 output_dir=""
 no_output=0
@@ -36,6 +38,7 @@ for arg in "$@"; do
         --route=*) route="${arg#--route=}" ;;
         --deck=*) deck="${arg#--deck=}" ;;
         --config=*) config="${arg#--config=}" ;;
+        --xk-config=*) xk_config="${arg#--xk-config=}" ;;
         --flow=*) flow_bin="${arg#--flow=}" ;;
         --output-dir=*) output_dir="${arg#--output-dir=}" ;;
         --no-output) no_output=1 ;;
@@ -67,8 +70,9 @@ if [[ $profile -eq 1 ]]; then
 fi
 if [[ $true_residual -eq 1 ]]; then
     export OPM_SOLVED_TECH_TRUE_RESIDUAL=1
-    export NORNE_GPU_CPRW_AUDIT=1
 fi
+
+well_flag="--matrix-add-well-contributions=false"
 
 case "$route" in
     linglongamg)
@@ -77,33 +81,25 @@ case "$route" in
             die "Cannot find liblinglongamg.so under LINGLONGAMG_ROOT=$LINGLONGAMG_ROOT."
         export LINGLONGAMG_OPM_LIBRARY="${LINGLONGAMG_OPM_LIBRARY:-$ll_lib}"
         export LINGLONGAMG_OPM_CONFIG="${LINGLONGAMG_OPM_CONFIG:-$package_dir/examples/configs/linglong-gmres-amg.json}"
-        export LD_LIBRARY_PATH="$(dirname -- "$ll_lib")${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+        export LD_LIBRARY_PATH="$(dirname -- "$ll_lib")${CUDA_HOME:+:$CUDA_HOME/lib64}${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
         ;;
     xianzhikrylov)
         : "${XIANZHIKRYLOV_ROOT:?Set XIANZHIKRYLOV_ROOT before running route=xianzhikrylov.}"
         xk_lib=$(find_xianzhi_library "$XIANZHIKRYLOV_ROOT") ||
             die "Cannot find libXianzhiKrylov.so under XIANZHIKRYLOV_ROOT=$XIANZHIKRYLOV_ROOT."
-        export LD_LIBRARY_PATH="$(dirname -- "$xk_lib")${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-        ;;
-    cpr)
-        : "${LINGLONGAMG_ROOT:?Set LINGLONGAMG_ROOT before running route=cpr.}"
-        : "${XIANZHIKRYLOV_ROOT:?Set XIANZHIKRYLOV_ROOT before running route=cpr.}"
-        ll_lib=$(find_linglong_library "$LINGLONGAMG_ROOT") ||
-            die "Cannot find liblinglongamg.so under LINGLONGAMG_ROOT=$LINGLONGAMG_ROOT."
-        xk_lib=$(find_xianzhi_library "$XIANZHIKRYLOV_ROOT") ||
-            die "Cannot find libXianzhiKrylov.so under XIANZHIKRYLOV_ROOT=$XIANZHIKRYLOV_ROOT."
-        export NORNE_AMG_LIBRARY="${NORNE_AMG_LIBRARY:-$ll_lib}"
-        export NORNE_AMG_CONFIG="${NORNE_AMG_CONFIG:-$package_dir/examples/configs/linglong-vcycle.json}"
-        export NORNE_AMG_ALLOW_SINGLE_STEP="${NORNE_AMG_ALLOW_SINGLE_STEP:-1}"
-        export LD_LIBRARY_PATH="$(dirname -- "$xk_lib"):$(dirname -- "$ll_lib")${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+        xk_cfg=${xk_config:-"${XIANZHIKRYLOV_OPM_CONFIG:-$package_dir/examples/configs/xk-bsr3-bicgstab-ilu0.json}"}
+        [[ -r $xk_cfg ]] || die "XianzhiKrylov config file not found: $xk_cfg"
+        export XIANZHIKRYLOV_OPM_CONFIG="$xk_cfg"
+        export LD_LIBRARY_PATH="$(dirname -- "$xk_lib")${CUDA_HOME:+:$CUDA_HOME/lib64}${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+        well_flag="--matrix-add-well-contributions=true"
         ;;
 esac
 
 flow_args=(
     "$deck"
     "--output-dir=$output_dir"
-    "--linear-solver-configuration-file=$config"
-    "--matrix-add-well-contributions=false"
+    "--linear-solver=$config"
+    "$well_flag"
     "--enable-opm-rst-file=false"
 )
 if [[ $no_output -eq 1 ]]; then
