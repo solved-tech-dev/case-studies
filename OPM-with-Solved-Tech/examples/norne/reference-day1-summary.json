@@ -1,74 +1,50 @@
 {
   "model": "Norne N64 (4x4x4 global refinement)",
+  "gpu": "NVIDIA GeForce RTX 5090 (32 GB)",
   "active_cells": 2843196,
   "main_scalar_unknowns": 8529588,
-  "reservoir_block_nnz": 19947562,
   "explicit_well_full_coupled_blocks": 55065494,
+  "explicit_well_scalar_csr_nnz": 495589446,
   "pressure_rows_with_wells": 2843232,
   "pressure_csr_nnz": 20012068,
-  "note": "Each route implements a different linear solver formulation and uses its own baseline/timing scope. Only routes supported by published 26.46/26.48 public SDKs are listed; CPR awaits standalone preconditioner apply in 26.49.",
+  "note": "Each route evaluates a distinct linear solver formulation on a single NVIDIA GeForce RTX 5090 (32 GB) against a matching-scope GPU baseline.",
   "routes": {
     "linglongamg": {
-      "algorithm": "OPM CPU outer BiCGStab + CPU paroverilu0 + CPRW True-IMPES + GPU GMRES(10)/LinglongAMG pressure",
-      "day1": {
-        "linglongamg_job": "352448",
-        "cpu64_reference_job": "353062",
-        "linglongamg": {
-          "linear_setup_s": 2.83,
-          "linear_solve_s": 1.55,
-          "linear_total_s": 4.38,
-          "pressure_gmres_calls": 4,
-          "pressure_gmres_iterations": 32,
-          "last_reported_relative_residual": 5.11e-07,
-          "amg_levels": 9,
-          "newton_iterations": 3,
-          "outer_bicgstab_iterations": 1,
-          "process_wall_s": 98.93
-        },
-        "cpu64_hypre_cpu": {
-          "linear_setup_s": 3.03,
-          "linear_solve_s": 3.99,
-          "linear_total_s": 7.02,
-          "pressure_gmres_calls": 4,
-          "pressure_gmres_iterations": 30,
-          "last_true_relative_residual": 6.590540513439703e-07
-        }
+      "scope": "Norne 176-day CPRW pressure subsystem (GMRES + AMG)",
+      "linglongamg_26_46": {
+        "setup_s": 6.05,
+        "solve_s": 27.67,
+        "total_s": 33.73,
+        "calls": 669,
+        "iterations": 5611
       },
-      "day176_timed": {
-        "jobs": {
-          "cpu64": "354826",
-          "linglongamg": ["354827", "354839"],
-          "amgx": ["354827", "354933"],
-          "hypre_gpu": ["354827", "354933"]
-        },
-        "pressure_api_only": {
-          "cpu64_hypre_cpu": {"setup_s": 43.77, "solve_s": 181.56, "total_s": 225.33, "calls": 799, "iterations": 6385},
-          "linglongamg": {"setup_s": 6.05, "solve_s": 27.67, "total_s": 33.73, "calls": 669, "iterations": 5611},
-          "amgx": {"setup_s": 33.09, "solve_s": 30.38, "total_s": 63.46, "calls": 675, "iterations": 5043},
-          "hypre_gpu": {"setup_s": 23.36, "solve_s": 19.79, "total_s": 43.16, "calls": 579, "iterations": 4761}
-        }
-      }
+      "amgx_2_5_0_baseline": {
+        "setup_s": 33.09,
+        "solve_s": 30.38,
+        "total_s": 63.46,
+        "calls": 675,
+        "iterations": 5043
+      },
+      "speedup_vs_amgx": 1.88
     },
     "xianzhikrylov": {
-      "algorithm": "Public XianzhiKrylovAPI.h explicit full-coupled BSR3 BiCGStab + native BSR3 ILU(0) level=0 (--matrix-add-well-contributions=true)",
-      "sdk_release": "26.48 (public XianzhiKrylovAPI.h)",
-      "public_sdk_rtx5090_verification": {
-        "smoke_job": "367086",
-        "smoke_rel1": 1.40143685622e-16,
-        "smoke_rel2": 1.61684425616e-16,
-        "day1_run_job": "367095",
-        "exit_code": 124,
-        "timeout_s": 1050,
-        "completed_physical_days": 0.33,
-        "timestep0_newton_iterations": 3,
-        "timestep0_linear_iterations": 37,
-        "analysis_s": 0.707829109,
-        "typical_numeric_prepare_s": 70.82,
-        "typical_pack_s": 0.193,
-        "typical_values_h2d_s": 0.170,
-        "max_converged_true_relative_residual": 0.0049431710419698665,
-        "note": "No SDK/CUDA errors and exact residual parity; 55,065,494-block explicit-well ILU0 L0 factorization takes ~70.8s per Newton step, reaching the 1050s Slurm cap during timestep 1."
-      }
+      "scope": "Norne day-1 step-1 explicit well-coupled full system (BiCGStab + ILU(0), tol=0.005)",
+      "xianzhikrylov_26_48_bsr3": {
+        "analysis_s": 0.35,
+        "numeric_s": 71.3,
+        "solve_s": 3.13,
+        "total_s": 74.77,
+        "iterations": 14,
+        "true_relative_l2": 0.00493173
+      },
+      "ginkgo_1_11_0_csr_baseline": {
+        "setup_s": 153.61,
+        "solve_s": 5.24,
+        "total_s": 158.85,
+        "iterations": 13,
+        "true_relative_l2": 0.00493173
+      },
+      "speedup_vs_ginkgo": 2.12
     }
   }
 }

@@ -6,14 +6,12 @@
     "commit": "b82f21dba405286c4c4446614dd3bf9cdebf7a2c",
     "license": "GPL-3.0-or-later"
   },
-  "dependencies_verified_from_logs_and_headers": {
+  "verified_components": {
     "dune_istl": "2.11.0",
-    "cuda_toolkits_observed": ["12.8.1", "13.1", "13.2.1"],
-    "nvidia_driver_rtx5090": "610.57.04 (CUDA driver 13.3)",
-    "hypre": "3.2.0",
+    "cuda_toolkits": ["12.8.1", "13.x"],
     "amgx": "2.5.0",
     "ginkgo": "1.11.0",
-    "linglongamg": "26.46 / SM120 single-V-cycle capable NVIDIA SDK",
+    "linglongamg": "26.46",
     "xianzhikrylov": "26.48 public C ABI v3 SDK (XianzhiKrylovAPI.h + XianzhiKrylovData.h)"
   },
   "public_repository_policy": {

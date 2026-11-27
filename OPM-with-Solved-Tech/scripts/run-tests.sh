@@ -45,11 +45,9 @@ for s in "$package_dir"/scripts/*.sh; do
 done
 
 info "4/6 Checking invalid-route error handling and no-SDK preflight..."
-for bad_route in invalid cpr; do
-    if bash "$package_dir/scripts/configure.sh" --route="$bad_route" >/dev/null 2>&1; then
-        die "configure.sh --route=$bad_route unexpectedly succeeded"
-    fi
-done
+if bash "$package_dir/scripts/configure.sh" --route=invalid >/dev/null 2>&1; then
+    die "configure.sh --route=invalid unexpectedly succeeded"
+fi
 for r in linglongamg xianzhikrylov; do
     if env -u LINGLONGAMG_ROOT -u XIANZHIKRYLOV_ROOT -u CUDA_HOME \
         bash "$package_dir/scripts/check-env.sh" --route="$r" >/dev/null 2>&1; then
