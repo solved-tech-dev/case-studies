@@ -57,7 +57,7 @@
 
 ## 3. 目录结构
 
-本仓库仅保存轻量级 overlay 源码、最小统一补丁、公开配置、构建/验证脚本与脱敏文档，**不复制整套上游 OPM 源码，也不包含任何闭源 `.so`、`.a`、可执行文件或授权文件**：
+本目录包含 overlay 源码、统一补丁、公开配置、构建和验证脚本、文档以及 Norne N64 公开算例数据，**不复制整套上游 OPM 源码，也不包含任何闭源 `.so`、`.a`、可执行文件或授权文件**：
 
 ```text
 OPM-with-Solved-Tech/
@@ -77,7 +77,8 @@ OPM-with-Solved-Tech/
     patches/opm-2026.04-solved-tech.patch
   examples/
     configs/                            # 公开示例 JSON（仅用相对路径与环境变量）
-    norne/                              # Norne N64 输入下载、模型说明与首日参考摘要
+    norne/                              # Norne N64 模型说明与首日参考摘要
+  norne-n64-grid-v1/                    # Norne N64 Eclipse 输入与角点网格下载
   manifests/
     source.json                         # 上游 OPM 与各对比组件版本清单
     sdk-contract.json                   # 三条路线所需的 SDK 头文件、库符号与隔离契约
@@ -136,7 +137,7 @@ OPM-with-Solved-Tech/
 
 ## 6. 配置、构建与运行命令
 
-运行前先[下载并解压 Norne N64 输入包](examples/norne/README.md#simulation-input)。将 `NORNE_N64.DATA` 和 `GRID_PROPS.INC` 保存在同一目录。默认运行完整历史调度，短时测试可按算例说明设置结束日期。
+运行前先[下载并解压 Norne N64 输入包](norne-n64-grid-v1/README.md#downloads)。将 `NORNE_N64.DATA` 和 `GRID_PROPS.INC` 保存在同一目录。默认运行完整历史调度，短时测试可按算例说明设置结束日期。
 
 ### 纯宿主静态检查（无需 GPU 与 SDK）
 

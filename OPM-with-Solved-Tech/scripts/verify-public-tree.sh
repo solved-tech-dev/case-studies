@@ -22,6 +22,7 @@ for arg in "$@"; do
 done
 
 python3 - "$package_dir" <<'PY'
+import hashlib
 import os
 import re
 import sys
@@ -37,6 +38,10 @@ forbidden_exts = {
 }
 forbidden_dirs = {"sdk", "third_party", "lib", "bin", "license", "work", "build", "install", "__pycache__"}
 max_bytes = 512 * 1024
+published_data_archives = {
+    "norne-n64-grid-v1/Norne_N64_4x4x4.DATA.tar.gz": "777ca3615d9c7151ba81dd0e95c4e72abe6b9c33463c39815723eb312354772f",
+    "norne-n64-grid-v1/Norne_N64_4x4x4.EGRID.gz": "9b726288a9ecf5626a176036bc6f1775f028721c0d1eb221a4764869acdec735",
+}
 
 private_prefixes = (
     "/ho" + "me/",
@@ -68,6 +73,15 @@ for dirpath, dirnames, filenames in os.walk(root):
         fpath = Path(dirpath) / fname
         rel_path = fpath.relative_to(root)
         file_count += 1
+        expected_sha256 = published_data_archives.get(rel_path.as_posix())
+        if expected_sha256 is not None:
+            digest = hashlib.sha256()
+            with fpath.open("rb") as archive:
+                for chunk in iter(lambda: archive.read(1024 * 1024), b""):
+                    digest.update(chunk)
+            if digest.hexdigest() != expected_sha256:
+                errors.append(f"Unexpected checksum for published data: {rel_path}")
+            continue
         lower = fname.lower()
         if ".so." in lower or any(lower.endswith(ext) for ext in forbidden_exts) or lower.endswith(".license.key"):
             errors.append(f"Forbidden file extension: {rel_path}")
