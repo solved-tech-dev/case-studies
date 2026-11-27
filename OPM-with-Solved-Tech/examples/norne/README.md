@@ -21,10 +21,17 @@ The `.DATA` deck is the simulator input and defines the run. The upstream `.GRDE
 - **Refined Norne N64 grid (184 × 448 × 88).** OPM Flow 2026.04 wrote `NORNE1.EGRID` from the refined day-1 deck. The exported copy is named `Norne_N64_4x4x4.EGRID`. This Eclipse binary corner-point grid contains `COORD`, `ZCORN`, and `ACTNUM` for 7,254,016 logical cells, of which 2,843,196 are active. The simulation input can be prepared from the public deck as described below.
 - **Download.** The [Norne_N64_4x4x4.EGRID](https://github.com/solved-tech-dev/case-studies/releases/download/norne-n64-grid-v1/Norne_N64_4x4x4.EGRID) asset is available in the [Norne N64 grid release](https://github.com/solved-tech-dev/case-studies/releases/tag/norne-n64-grid-v1). Its size is 265,494,912 bytes (253 MiB). SHA-256 is `f11a4dff73814028198dbb65a2728854c9b465eecb808bc598ce5135ccef80bb`.
 
+## Full-system Jacobian
+
+Download [`Norne_N64_4x4x4_Jacobian_FirstNewton.mtx.zst`](https://github.com/solved-tech-dev/case-studies/releases/download/norne-n64-grid-v1/Norne_N64_4x4x4_Jacobian_FirstNewton.mtx.zst) (703 MiB) and decompress it with `zstd -d Norne_N64_4x4x4_Jacobian_FirstNewton.mtx.zst`. It contains the **8,529,588 × 8,529,588** Jacobian from the first Newton linearization of the Norne N64 run (report step 0, 1997-11-06) in scalar Matrix Market coordinate format with one-based indexing.
+
+The matrix includes the explicitly assembled well Schur contributions (`--matrix-add-well-contributions=true`). It contains **89,373,203 nonzero entries** after removing explicit numerical zeros from the OPM Matrix Market export. The retained coefficients keep the precision of that text export.
+
+SHA-256 of the compressed attachment is `e85a787ebafc3e8b049198584d0a61789ee1a52191d3e3f3057298df06f5d3ef`.
+
 ## Obtaining the Data Deck
 
 To prepare a Norne N64 simulation deck:
-
 
 1. Obtain the upstream Norne Eclipse deck from the [OPM opm-data repository](https://github.com/OPM/opm-data/tree/master/norne) (`NORNE_ATW2013.DATA`).
 2. Apply 4x4x4 global refinement (or use your prepared refined `NORNE1.DATA` / `NORNE176.DATA` deck with shared `GRID_PROPS.INC`).
