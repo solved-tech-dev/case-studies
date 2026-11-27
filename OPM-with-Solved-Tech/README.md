@@ -77,7 +77,7 @@ OPM-with-Solved-Tech/
     patches/opm-2026.04-solved-tech.patch
   examples/
     configs/                            # 公开示例 JSON（仅用相对路径与环境变量）
-    norne/                              # Norne N64 模型说明与参考首日摘要
+    norne/                              # Norne N64 输入下载、模型说明与首日参考摘要
   manifests/
     source.json                         # 上游 OPM 与各对比组件版本清单
     sdk-contract.json                   # 三条路线所需的 SDK 头文件、库符号与隔离契约
@@ -136,6 +136,8 @@ OPM-with-Solved-Tech/
 
 ## 6. 配置、构建与运行命令
 
+运行前先[下载并解压 Norne N64 输入包](examples/norne/README.md#simulation-input)。将 `NORNE_N64.DATA` 和 `GRID_PROPS.INC` 保存在同一目录。默认运行完整历史调度，短时测试可按算例说明设置结束日期。
+
 ### 纯宿主静态检查（无需 GPU 与 SDK）
 
 ```bash
@@ -156,7 +158,7 @@ export LINGLONGAMG_ROOT=/path/to/LinglongAMG
 bash scripts/configure.sh --route=linglongamg
 bash scripts/build.sh
 bash scripts/run-case.sh --route=linglongamg \
-  --deck=/path/to/NORNE1.DATA \
+  --deck=/path/to/Norne_N64/NORNE_N64.DATA \
   --config=examples/configs/linglongamg.json
 ```
 
@@ -171,7 +173,7 @@ export XIANZHIKRYLOV_ROOT=/path/to/XianzhiKrylov
 bash scripts/configure.sh --route=xianzhikrylov
 bash scripts/build.sh
 bash scripts/run-case.sh --route=xianzhikrylov \
-  --deck=/path/to/NORNE1.DATA \
+  --deck=/path/to/Norne_N64/NORNE_N64.DATA \
   --config=examples/configs/xianzhikrylov.json \
   --profile --true-residual
 ```
@@ -187,7 +189,7 @@ export XIANZHIKRYLOV_ROOT=/path/to/XianzhiKrylov
 bash scripts/configure.sh --route=cpr
 bash scripts/build.sh
 bash scripts/run-case.sh --route=cpr \
-  --deck=/path/to/NORNE1.DATA \
+  --deck=/path/to/Norne_N64/NORNE_N64.DATA \
   --config=examples/configs/cpr.json \
   --no-output --profile --true-residual
 ```
