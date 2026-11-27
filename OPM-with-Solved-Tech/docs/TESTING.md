@@ -72,7 +72,7 @@ bash scripts/run-tests.sh --static-only
 
 ## 6. Norne 首日验算口径
 
-在获取 Norne N64 首日 Deck（`NORNE1.DATA` + `GRID_PROPS.INC`）后，使用 `--profile --true-residual` 运行首日：
+从[发布的 Norne N64 输入包](../examples/norne/README.md#simulation-input)复制一份 `NORNE_N64.DATA`，并保持 `GRID_PROPS.INC` 与副本在同一目录。在副本的 `SCHEDULE` 中保留至 `7 'NOV' 1997` 的报告日期，在该 `DATES` 段结束后加入 `END`，将其作为首日测试的输入。用 `--profile --true-residual` 运行并进行以下核对。
 
 - 核对退出码（0）、收敛状态、物理天数（`1.0` 天）、时间步数、Newton 迭代次数与线性迭代次数。
 - 核对独立真实相对残差均满足设定容差（外层 BiCGStab `< 0.005`，压力 GMRES `< 1e-6`）。
