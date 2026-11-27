@@ -1,40 +1,32 @@
 # Norne N64 Benchmark Case Notes
 
-The Norne N64 case is a 4x4x4 global refinement of the public Norne field model:
+Norne N64 is a 4 × 4 × 4 global refinement of the public Norne field model. The logical grid grows from 46 × 112 × 22 to **184 × 448 × 88**, with **2,843,196 active cells** and **8,529,588 scalar unknowns** in the three-component black-oil reservoir system.
 
-- Base Norne grid: `46 x 112 x 22`
-- Refined N64 logical grid: `184 x 448 x 88` (`7,254,016` logical cells)
-- Active cells: `2,843,196`
-- Black-oil 3-component main Jacobian (`BSR3`, FP64):
-  - `2,843,196` block rows (`8,529,588` scalar unknowns)
-  - `19,947,562` block nonzeros (`179,528,058` stored scalar entries in reservoir matrix)
-  - Plus `36` standard well equations (`2,843,232` pressure system rows, `20,012,068` CSR nonzeros in CPRW)
-- Simulation start date: `1997-11-06`
-  - Day-1 window: `1997-11-06` to `1997-11-07` (`1.0` physical day)
-  - 176-day window: `1997-11-06` to `1998-05-01` (`176.0` physical days)
+## Simulation input
+
+Download [`Norne_N64_4x4x4.DATA.tar.gz`](https://github.com/solved-tech-dev/case-studies/releases/download/norne-n64-grid-v1/Norne_N64_4x4x4.DATA.tar.gz) (100.9 MiB) from the [Norne N64 release](https://github.com/solved-tech-dev/case-studies/releases/tag/norne-n64-grid-v1). The deck contains the historical schedule from **1997-11-06** to **2006-12-01** (3,312 simulated days).
+
+```sh
+tar -xzf Norne_N64_4x4x4.DATA.tar.gz
+flow Norne_N64/NORNE_N64.DATA
+```
+
+The archive contains these two files in the same directory:
+
+| File | Contents | Uncompressed size |
+| --- | --- | ---: |
+| `NORNE_N64.DATA` | Eclipse input with fluid tables, well connections, controls and dates | 2.48 MiB |
+| `GRID_PROPS.INC` | N64 corner-point grid, active-cell mask and rock properties | 720.22 MiB |
+
+Keep both files together so that `INCLUDE` resolves from the main deck. For a shorter benchmark, use a copy of the main deck and end its `SCHEDULE` at the desired reporting date. The same `GRID_PROPS.INC` can be reused.
+
+To use the solver integrations in this repository, pass the path to `NORNE_N64.DATA` as `--deck` to `scripts/run-case.sh` with a configuration from `examples/configs/`.
+
+Archive SHA-256: `b8f823643c330c728641bf0378ee0e6a95bb2d6d879149de092f6bfd9554f072`.
 
 ## Corner-point Grid Files
 
-The `.DATA` deck is the simulator input and defines the run. The upstream `.GRDECL` provides text grid geometry, and the exported `.EGRID` provides the refined grid in Eclipse binary format.
+- **Original Norne grid (46 × 112 × 22).** The upstream [`NORNE_ATW2013.DATA`](https://github.com/OPM/opm-data/blob/master/norne/NORNE_ATW2013.DATA) reads the geometry from [`IRAP_1005.GRDECL`](https://github.com/OPM/opm-data/blob/master/norne/INCLUDE/GRID/IRAP_1005.GRDECL) and the active-cell mask from [`ACTNUM_0704.prop`](https://github.com/OPM/opm-data/blob/master/norne/INCLUDE/GRID/ACTNUM_0704.prop).
+- **Refined Norne N64 grid (184 × 448 × 88).** Download [`Norne_N64_4x4x4.EGRID`](https://github.com/solved-tech-dev/case-studies/releases/download/norne-n64-grid-v1/Norne_N64_4x4x4.EGRID) (253 MiB) for the OPM Flow Eclipse binary corner-point grid containing `COORD`, `ZCORN` and `ACTNUM`. SHA-256: `f11a4dff73814028198dbb65a2728854c9b465eecb808bc598ce5135ccef80bb`.
 
-- **Original Norne grid (46 × 112 × 22).** The upstream [NORNE_ATW2013.DATA deck](https://github.com/OPM/opm-data/blob/master/norne/NORNE_ATW2013.DATA) reads its corner-point geometry from [IRAP_1005.GRDECL](https://github.com/OPM/opm-data/blob/master/norne/INCLUDE/GRID/IRAP_1005.GRDECL) and its active-cell mask from [ACTNUM_0704.prop](https://github.com/OPM/opm-data/blob/master/norne/INCLUDE/GRID/ACTNUM_0704.prop).
-- **Refined Norne N64 grid (184 × 448 × 88).** OPM Flow 2026.04 wrote `NORNE1.EGRID` from the refined day-1 deck. The exported copy is named `Norne_N64_4x4x4.EGRID`. This Eclipse binary corner-point grid contains `COORD`, `ZCORN`, and `ACTNUM` for 7,254,016 logical cells, of which 2,843,196 are active. The simulation input can be prepared from the public deck as described below.
-- **Download.** The [Norne_N64_4x4x4.EGRID](https://github.com/solved-tech-dev/case-studies/releases/download/norne-n64-grid-v1/Norne_N64_4x4x4.EGRID) asset is available in the [Norne N64 grid release](https://github.com/solved-tech-dev/case-studies/releases/tag/norne-n64-grid-v1). Its size is 265,494,912 bytes (253 MiB). SHA-256 is `f11a4dff73814028198dbb65a2728854c9b465eecb808bc598ce5135ccef80bb`.
-
-## Full-system Jacobian
-
-Download [`Norne_N64_4x4x4_Jacobian_FirstNewton.mtx.zst`](https://github.com/solved-tech-dev/case-studies/releases/download/norne-n64-grid-v1/Norne_N64_4x4x4_Jacobian_FirstNewton.mtx.zst) (703 MiB) and decompress it with `zstd -d Norne_N64_4x4x4_Jacobian_FirstNewton.mtx.zst`. It contains the **8,529,588 × 8,529,588** Jacobian from the first Newton linearization of the Norne N64 run (report step 0, 1997-11-06) in scalar Matrix Market coordinate format with one-based indexing.
-
-The matrix includes the explicitly assembled well Schur contributions (`--matrix-add-well-contributions=true`). It contains **89,373,203 nonzero entries** after removing explicit numerical zeros from the OPM Matrix Market export. The retained coefficients keep the precision of that text export.
-
-SHA-256 of the compressed attachment is `e85a787ebafc3e8b049198584d0a61789ee1a52191d3e3f3057298df06f5d3ef`.
-
-## Obtaining the Data Deck
-
-To prepare a Norne N64 simulation deck:
-
-1. Obtain the upstream Norne Eclipse deck from the [OPM opm-data repository](https://github.com/OPM/opm-data/tree/master/norne) (`NORNE_ATW2013.DATA`).
-2. Apply 4x4x4 global refinement (or use your prepared refined `NORNE1.DATA` / `NORNE176.DATA` deck with shared `GRID_PROPS.INC`).
-3. Pass the deck and one of the route configurations in `examples/configs/` to `scripts/run-case.sh`.
-
-For day-1 validation without proprietary data, `reference-day1-summary.json` records the verified physical summaries, job IDs, and solver statistics from each route's reference runs.
+The N64 model is derived from the public Norne ATW 2013 deck, copyright Statoil (2015). The upstream notices specify the [Open Database License](https://opendatacommons.org/licenses/odbl/1-0/) and the [Database Contents License](https://opendatacommons.org/licenses/dbcl/1-0/).
