@@ -15,9 +15,11 @@ The Norne N64 case is a 4x4x4 global refinement of the public Norne field model:
 
 ## Corner-point Grid Files
 
+The `.DATA` deck is the simulator input and defines the run. The upstream `.GRDECL` provides text grid geometry, and the exported `.EGRID` provides the refined grid in Eclipse binary format.
+
 - **Original Norne grid (46 × 112 × 22).** The upstream [NORNE_ATW2013.DATA deck](https://github.com/OPM/opm-data/blob/master/norne/NORNE_ATW2013.DATA) reads its corner-point geometry from [IRAP_1005.GRDECL](https://github.com/OPM/opm-data/blob/master/norne/INCLUDE/GRID/IRAP_1005.GRDECL) and its active-cell mask from [ACTNUM_0704.prop](https://github.com/OPM/opm-data/blob/master/norne/INCLUDE/GRID/ACTNUM_0704.prop).
 - **Refined Norne N64 grid (184 × 448 × 88).** OPM Flow 2026.04 wrote `NORNE1.EGRID` from the refined day-1 deck. The exported copy is named `Norne_N64_4x4x4.EGRID`. This Eclipse binary corner-point grid contains `COORD`, `ZCORN`, and `ACTNUM` for 7,254,016 logical cells, of which 2,843,196 are active. Running the benchmark also requires the simulation deck and its INCLUDE files.
-- **Distribution.** If publishing the 265,494,912-byte EGRID (253 MiB), attach it to a [GitHub Release](https://github.com/solved-tech-dev/case-studies/releases) and add the asset link here. The repository ignores `*.EGRID`. The SHA-256 of the verified export is `f11a4dff73814028198dbb65a2728854c9b465eecb808bc598ce5135ccef80bb`.
+- **Download.** The [Norne_N64_4x4x4.EGRID](https://github.com/solved-tech-dev/case-studies/releases/download/norne-n64-grid-v1/Norne_N64_4x4x4.EGRID) asset is available in the [Norne N64 grid release](https://github.com/solved-tech-dev/case-studies/releases/tag/norne-n64-grid-v1). Its size is 265,494,912 bytes (253 MiB). SHA-256 is `f11a4dff73814028198dbb65a2728854c9b465eecb808bc598ce5135ccef80bb`.
 
 ## Obtaining the Data Deck
 
